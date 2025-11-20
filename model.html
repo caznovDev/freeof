@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="metaTitle">Model — ErroTube</title>
+  <meta name="description" id="metaDescription" content="Watch leaked OnlyFans videos from this model on ErroTube.">
+  <meta name="keywords" id="metaKeywords" content="ErroTube, OnlyFans, leaked videos">
+  <meta property="og:title" id="ogTitle" content="OnlyFans Model — ErroTube" />
+  <meta property="og:image" id="ogImage" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" id="twitterImage" content="" />
+  <meta name="referrer" content="no-referrer">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #e5e7eb;
+      font-family: system-ui, sans-serif;
+      margin: 0;
+    }
+    .video-wrapper video {
+      width: 100%;
+      height: auto;
+      border-radius: 0.75rem;
+      margin: 1.25rem 0;
+      background: #000;
+      display: block;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <nav class="bg-[#181818] border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
+    <a href="/" class="text-white font-semibold text-xl">Erroo<span class="text-blue-500">tube</span></a>
+    <a href="/onlyf.html" class="text-gray-400 hover:text-blue-400 text-sm">OnlyFans Models</a>
+  </nav>
+
+  <main class="flex-1 mx-auto pt-24 w-full">
+    <header id="modelHeader" class="flex flex-col sm:flex-row items-center sm:items-end gap-4 border-b border-gray-800 pb-4 mb-6 px-4 sm:px-6 max-w-5xl mx-auto">
+    </header>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 mb-4">
+    </div>
+
+    <section id="videosSection" class="max-w-5xl mx-auto px-0">
+      <p class="text-gray-400 px-4 sm:px-0" id="videosStatus">Loading videos…</p>
+    </section>
+  </main>
+
+  <script>
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      return d.toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    async function loadModelPage() {
+      const slug = getQueryParam("slug");
+      const headerEl = document.getElementById("modelHeader");
+      const videosSection = document.getElementById("videosSection");
+      const statusEl = document.getElementById("videosStatus");
+
+      if (!slug) {
+        headerEl.innerHTML = "<h1 class='text-xl text-red-400'>Missing model slug.</h1>";
+        statusEl.textContent = "";
+        return;
+      }
+
+      try {
+        const modelRes = await fetch("/api/models?slug=" + encodeURIComponent(slug));
+        if (!modelRes.ok) throw new Error("Model API error");
+        const modelDataRaw = await modelRes.json();
+        const model = Array.isArray(modelDataRaw)
+          ? modelDataRaw[0]
+          : (modelDataRaw.items && modelDataRaw.items[0]) || modelDataRaw;
+
+        if (!model || !model.slug) {
+          headerEl.innerHTML = "<h1 class='text-xl text-red-400'>Model not found.</h1>";
+          statusEl.textContent = "";
+          return;
+        }
+
+        const name = model.display_name || model.slug;
+        const avatar = model.avatar_url || model.banner_url || "";
+        const created = formatDate(model.created_at);
+
+        const mainPoster = avatar;
+        document.getElementById("metaTitle").textContent = `Free ${name} OnlyFans Videos — ErroTube`;
+        document.getElementById("metaDescription").setAttribute("content", `Watch all leaked OnlyFans videos from ${name} on ErroTube. OnlyFans packs, content and more.`);
+        document.getElementById("metaKeywords").setAttribute("content", `${name}, ErroTube, OnlyFans videos, leaked OnlyFans, free OnlyFans`);
+        document.getElementById("ogTitle").setAttribute("content", `${name} OnlyFans — ErroTube`);
+        document.getElementById("ogImage").setAttribute("content", mainPoster);
+        document.getElementById("twitterImage").setAttribute("content", mainPoster);
+
+        headerEl.innerHTML = `
+          <img src="${avatar}" alt="${name}" class="w-24 h-24 rounded-full object-cover" loading="lazy">
+          <div>
+            <h1 class="text-3xl font-bold text-white">${name}</h1>
+            <p class="text-sm text-gray-400">${created ? created : ""}</p>
+          </div>
+        `;
+
+        const vidsRes = await fetch("/api/videos?model_slug=" + encodeURIComponent(slug) + "&page=1&limit=200&sort=recent");
+        if (!vidsRes.ok) throw new Error("Videos API error");
+        const vidsRaw = await vidsRes.json();
+        const videos = Array.isArray(vidsRaw) ? vidsRaw : (vidsRaw.items || []);
+
+        if (!videos.length) {
+          statusEl.textContent = "No videos found for this model.";
+          return;
+        }
+
+        statusEl.textContent = "";
+        videosSection.innerHTML = "";
+
+        videos.forEach(v => {
+          const videoUrl = v.video_url || "";
+          const posterUrl = v.thumbnail_url || avatar || "";
+          const wrapper = document.createElement("div");
+          wrapper.className = "video-wrapper px-4 sm:px-0";
+
+          wrapper.innerHTML = `
+            <video controls preload="metadata" poster="${posterUrl}">
+              <source src="${videoUrl}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          `;
+
+          videosSection.appendChild(wrapper);
+        });
+      } catch (err) {
+        console.error(err);
+        headerEl.innerHTML = "<h1 class='text-xl text-red-400'>Failed to load model.</h1>";
+        if (statusEl) statusEl.textContent = "Something went wrong loading the videos.";
+      }
+    }
+
+    loadModelPage();
+  </script>
+</body>
+</html>

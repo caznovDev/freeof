@@ -1,20 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Video — ErroTube</title>
   <meta name="referrer" content="no-referrer">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch video – FreeOF</title>
-  <meta name="description" content="Watch and download a high quality porn video on FreeOF.">
-  <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://freeof.pages.dev/watch.html">
-
-  <meta property="og:type" content="video.other">
-  <meta property="og:url" content="https://freeof.pages.dev/watch.html">
-  <meta property="og:title" content="Watch video – FreeOF">
-  <meta property="og:description" content="High quality porn video on FreeOF.">
-  <meta property="og:image" content="https://freeof.pages.dev/og-video.jpg">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,229 +13,118 @@
           colors: {
             darkbg: "#0f0f0f",
             darknav: "#181818",
-            accent: "#3b82f6",
+            card: "#111827",
           },
         },
       },
     };
   </script>
-  <style>
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-  </style>
 </head>
-
-<body class="bg-darkbg text-gray-200 min-h-screen font-sans">
-
-  <nav class="bg-darknav border-b border-gray-800 px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
-    <div class="flex items-center space-x-6">
-      <button id="backBtn" class="text-gray-300 hover:text-white">←</button>
-      <a href="/"><h1 class="text-xl font-semibold text-white">play<span class="text-blue-500">tube</span></h1></a>
-      <ul class="hidden md:flex space-x-5 text-sm">
-        <li class="hover:text-blue-400 cursor-pointer"><a href="onlyf.html">Models</a></li>
-        <li class="hover:text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
-      </ul>
-    </div>
+<body class="bg-darkbg text-gray-200 min-h-screen">
+  <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
+    <a href="/" class="text-xl font-semibold text-white">
+      play<span class="text-blue-500">tube</span>
+    </a>
+    <a href="/onlyf.html" class="text-gray-400 hover:text-blue-400 text-sm">Models</a>
   </nav>
 
-  <main class="pt-24 px-3 pb-10">
-    <div class="max-w-6xl mx-auto grid lg:grid-cols-[2fr,1fr] gap-6">
-      <section id="videoSection" class="space-y-4 lg:col-span-1">
-        <div id="playerContainer"
-             class="bg-black rounded-2xl overflow-hidden relative w-full aspect-video flex items-center justify-center">
-          <span class="text-gray-500 text-sm">Loading video...</span>
-        </div>
-        <div>
-          <h1 id="videoTitle" class="text-xl font-semibold mb-1"></h1>
-          <p id="videoMeta" class="text-xs text-gray-400 mb-2"></p>
-          <p id="videoDescription" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
-        </div>
-        <div id="modelInfo" class="flex items-center space-x-3 mt-4 hidden">
-          <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-800 flex-shrink-0" id="modelAvatarWrapper"></div>
-          <div>
-            <p id="modelName" class="text-sm font-semibold"></p>
-            <p id="modelBio" class="text-xs text-gray-400 line-clamp-2"></p>
-            <a id="modelLink" href="#" class="text-xs text-blue-400 underline mt-1 inline-block">
-              See all videos from this model
-            </a>
-          </div>
-        </div>
-        <div class="mt-4">
-          <a id="downloadBtn"
-             href="#"
-             class="inline-flex items-center px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-sm">
-            ⬇ Download video
-          </a>
-        </div>
-      </section>
+  <main class="pt-24 pb-10 max-w-6xl mx-auto px-4 sm:px-0">
+    <section id="videoSection" class="mb-8">
+      <p class="text-gray-400">Loading video…</p>
+    </section>
 
-      <aside class="space-y-3 lg:col-span-1">
-        <h2 class="text-sm font-semibold text-gray-300">More from this model</h2>
-        <div id="moreVideos" class="space-y-3 text-sm">
-          <p class="text-gray-500 text-xs">Loading more videos...</p>
-        </div>
-      </aside>
-    </div>
+    <section class="mt-6">
+      <h2 class="text-lg font-semibold mb-3">More from this model</h2>
+      <div id="relatedGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    </section>
   </main>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const videoId = parseInt(params.get("id") || "", 10);
-
-    if (!videoId || Number.isNaN(videoId)) {
-      document.getElementById("playerContainer").innerHTML =
-        '<span class="text-red-400 text-sm">Invalid video ID.</span>';
-    } else {
-      loadVideo(videoId);
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
     }
 
-    document.getElementById("backBtn").addEventListener("click", () => {
-      if (document.referrer) {
-        history.back();
-      } else {
-        window.location.href = "/";
-      }
-    });
+    async function loadVideoPage() {
+      const id = getQueryParam("id");
+      const videoSection = document.getElementById("videoSection");
+      const relatedGrid = document.getElementById("relatedGrid");
 
-    async function loadVideo(id) {
-      const playerContainer = document.getElementById("playerContainer");
-      const titleEl = document.getElementById("videoTitle");
-      const metaEl = document.getElementById("videoMeta");
-      const descEl = document.getElementById("videoDescription");
-      const downloadBtn = document.getElementById("downloadBtn");
+      if (!id) {
+        videoSection.innerHTML = "<p class='text-red-400'>Missing video id.</p>";
+        return;
+      }
 
       try {
-        const res = await fetch("/api/videos/" + id);
+        const res = await fetch("/api/videos?id=" + encodeURIComponent(id));
         if (!res.ok) throw new Error("API error");
-        const v = await res.json();
+        const raw = await res.json();
+        const video = Array.isArray(raw) ? raw[0] : (raw.items && raw.items[0]) || raw;
 
-        const videoUrl = v.video_url;
-        const title = v.title || "Untitled video";
-        const views = typeof v.views === "number"
-          ? new Intl.NumberFormat().format(v.views) + " views"
-          : "";
-        const duration = typeof v.duration_seconds === "number"
-          ? formatDuration(v.duration_seconds)
-          : "";
-        const channel = v.model_name || v.channel_name || "";
+        if (!video || !video.id) {
+          videoSection.innerHTML = "<p class='text-red-400'>Video not found.</p>";
+          return;
+        }
 
-        playerContainer.innerHTML = `
-          <video controls playsinline class="w-full h-full">
-            <source src="${videoUrl}" type="video/mp4">
+        const title = video.title || "Untitled video";
+        const src = video.video_url || "";
+        const thumb = video.thumbnail_url || "";
+        const modelName = video.model_name || "";
+        const modelId = video.model_id;
+
+        document.title = `${title} — ErroTube`;
+
+        videoSection.innerHTML = `
+          <div class="mb-3">
+            <h1 class="text-2xl font-semibold mb-2">${title}</h1>
+            ${modelName ? `<p class="text-sm text-gray-400">${modelName}</p>` : ""}
+          </div>
+          <video controls preload="metadata" poster="${thumb}" class="w-full rounded-xl bg-black">
+            <source src="${src}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
         `;
 
-        titleEl.textContent = title;
-        metaEl.textContent = [channel, views, duration].filter(Boolean).join(" • ");
-        descEl.textContent = v.description || "";
-
-        if (videoUrl) {
-          downloadBtn.href = videoUrl;
-          downloadBtn.setAttribute("download", "");
-        } else {
-          downloadBtn.classList.add("opacity-50", "pointer-events-none");
-        }
-
-        if (v.model_id && v.model_name) {
-          const modelInfo = document.getElementById("modelInfo");
-          const avatarWrapper = document.getElementById("modelAvatarWrapper");
-          const modelNameEl = document.getElementById("modelName");
-          const modelBioEl = document.getElementById("modelBio");
-          const modelLink = document.getElementById("modelLink");
-
-          modelInfo.classList.remove("hidden");
-          modelNameEl.textContent = v.model_name;
-          modelBioEl.textContent = v.model_bio || "";
-
-          if (v.model_avatar) {
-            avatarWrapper.innerHTML =
-              `<img src="${v.model_avatar}" alt="${v.model_name}" class="w-full h-full object-cover">`;
-          } else {
-            avatarWrapper.innerHTML =
-              `<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No img</div>`;
-          }
-
-          if (v.model_slug) {
-            modelLink.href = `/?model_slug=${encodeURIComponent(v.model_slug)}`;
-          } else {
-            modelLink.href = "onlyf.html";
-          }
-
-          loadMoreFromModel(v.model_id, id);
-        } else {
-          document.getElementById("moreVideos").innerHTML =
-            '<p class="text-xs text-gray-500">No model info for this video.</p>';
-        }
-      } catch (err) {
-        console.error(err);
-        playerContainer.innerHTML =
-          '<span class="text-red-400 text-sm">Failed to load video.</span>';
-      }
-    }
-
-    async function loadMoreFromModel(modelId, currentVideoId) {
-      const container = document.getElementById("moreVideos");
-      try {
-        const params = new URLSearchParams({
-          model_id: String(modelId),
-          limit: "8",
-          sort: "popular"
-        });
-        const res = await fetch("/api/videos?" + params.toString());
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        const items = Array.isArray(data) ? data : (data.items || []);
-
-        const filtered = items.filter((v) => v.id !== currentVideoId);
-
-        if (!filtered.length) {
-          container.innerHTML = '<p class="text-xs text-gray-500">No more videos from this model.</p>';
+        // related
+        if (!modelId) {
+          relatedGrid.innerHTML = "<p class='text-gray-400 text-sm col-span-full'>No related videos.</p>";
           return;
         }
 
-        container.innerHTML = "";
-        filtered.forEach((v) => {
-          const title = v.title || "Untitled";
-          const thumb = v.thumbnail_url || "";
-          const duration = typeof v.duration_seconds === "number"
-            ? formatDuration(v.duration_seconds)
-            : "";
+        const relRes = await fetch("/api/videos?model_id=" + encodeURIComponent(modelId) + "&limit=40&page=1&sort=recent");
+        if (!relRes.ok) throw new Error("Related API error");
+        const relRaw = await relRes.json();
+        let items = Array.isArray(relRaw) ? relRaw : (relRaw.items || []);
 
-          container.insertAdjacentHTML(
-            "beforeend",
-            `
-            <a href="watch.html?id=${v.id}" class="flex space-x-2 bg-gray-900 rounded-xl overflow-hidden hover:bg-gray-800 transition">
-              <div class="w-24 h-16 bg-black relative flex-shrink-0">
-                <img src="${thumb}" alt="${title}" class="w-full h-full object-cover">
-                ${duration
-                  ? `<span class="absolute bottom-0.5 right-0.5 bg-black/70 text-[10px] px-1 rounded">${duration}</span>`
-                  : ""}
-              </div>
-              <div class="flex-1 p-2">
-                <p class="text-xs font-semibold line-clamp-2">${title}</p>
+        items = items.filter(v => v.id !== video.id);
+        if (!items.length) {
+          relatedGrid.innerHTML = "<p class='text-gray-400 text-sm col-span-full'>No related videos.</p>";
+          return;
+        }
+
+        items.sort(() => Math.random() - 0.5);
+        items = items.slice(0, 8);
+
+        relatedGrid.innerHTML = "";
+        items.forEach(v => {
+          const t = v.title || "Untitled";
+          const th = v.thumbnail_url || "";
+          relatedGrid.insertAdjacentHTML("beforeend", `
+            <a href="watch.html?id=${v.id}" class="block bg-card rounded-xl overflow-hidden hover:scale-[1.02] transition">
+              <img src="${th}" class="w-full h-24 object-cover" alt="${t}">
+              <div class="p-2">
+                <p class="text-[11px] font-semibold line-clamp-2">${t}</p>
               </div>
             </a>
-          `
-          );
+          `);
         });
       } catch (err) {
         console.error(err);
-        container.innerHTML =
-          '<p class="text-xs text-gray-500">Failed to load more videos.</p>';
+        videoSection.innerHTML = "<p class='text-red-400'>Failed to load video.</p>";
       }
     }
 
-    function formatDuration(sec) {
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return m + ":" + s.toString().padStart(2, "0");
-    }
+    loadVideoPage();
   </script>
-
 </body>
 </html>

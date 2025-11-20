@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OnlyFans Models Directory — ErroTube</title>
+  <meta name="description" content="Discover top OnlyFans models on ErroTube and watch their leaked packs and videos in one place.">
   <meta name="referrer" content="no-referrer">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FreeOF Models Directory – Discover Top OnlyFans-style creators</title>
-  <meta name="description" content="Browse the FreeOF models directory. Discover top creators, see their profiles and jump straight to their best videos.">
-  <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://freeof.pages.dev/onlyf.html">
-
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://freeof.pages.dev/onlyf.html">
-  <meta property="og:title" content="FreeOF Models Directory – Discover Top Creators">
-  <meta property="og:description" content="Explore FreeOF's directory of models and go to their videos.">
-  <meta property="og:image" content="https://freeof.pages.dev/og-models.jpg">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -24,186 +15,137 @@
             darkbg: "#0f0f0f",
             darknav: "#181818",
             accent: "#3b82f6",
+            card: "#111827",
+            borderPink: "#ff007f",
           },
         },
       },
     };
   </script>
-  <style>
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-  </style>
 </head>
+<body class="bg-darkbg text-gray-100 min-h-screen font-sans">
 
-<body class="bg-darkbg text-gray-200 min-h-screen font-sans">
-
-  <nav class="bg-darknav border-b border-gray-800 px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
-    <div class="flex items-center space-x-6">
-      <a href="/"><h1 class="text-xl font-semibold text-white">play<span class="text-blue-500">tube</span></h1></a>
-      <ul class="hidden md:flex space-x-5 text-sm">
-        <li class="text-blue-400 cursor-pointer"><a href="onlyf.html">Models</a></li>
-        <li class="hover:text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
+  <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
+    <div class="flex items-center space-x-3">
+      <button class="text-gray-300 hover:text-white sm:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
+        </svg>
+      </button>
+      <a href="/" class="text-xl font-semibold text-white">
+        Erroo<span class="text-blue-500">tube</span>
+      </a>
+      <ul class="hidden sm:flex space-x-5 text-sm ml-4">
+        <li class="hover:text-blue-400 cursor-pointer"><a href="/">Videos</a></li>
+        <li class="text-blue-400 cursor-pointer"><a href="/onlyf.html">Models</a></li>
       </ul>
     </div>
   </nav>
 
-  <main class="pt-24 px-3 pb-10">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-2xl font-semibold">Models Directory</h2>
-          <p class="text-xs text-gray-400 mt-1">Tap a model to filter the homepage by her videos.</p>
-        </div>
-      </div>
+  <main class="pt-24 pb-10">
+    <header class="max-w-5xl mx-auto px-4 sm:px-0 mb-6">
+      <h1 class="text-3xl font-bold mb-2">Models – Top Rated</h1>
+      <p class="text-sm text-gray-400">Browse our directory of OnlyFans models.</p>
+    </header>
 
-      <div id="modelsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <section id="modelsList" class="max-w-5xl mx-auto px-0 space-y-5">
+    </section>
 
-      <div class="flex justify-center items-center space-x-1 mt-10">
-        <button id="prevBtn"
-                class="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
-          &lt;
-        </button>
-        <div id="pageButtons" class="flex space-x-1"></div>
-        <button id="nextBtn"
-                class="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
-          &gt;
-        </button>
-      </div>
+    <div class="flex justify-center items-center space-x-2 mt-8">
+      <button id="prevBtn" class="px-3 py-1 rounded bg-gray-900 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">
+        &lt;
+      </button>
+      <span id="pageNumber" class="px-3 py-1 rounded bg-blue-600 text-white">1</span>
+      <button id="nextBtn" class="px-3 py-1 rounded bg-gray-900 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">
+        &gt;
+      </button>
     </div>
   </main>
 
   <script>
-    const PAGE_LIMIT = 20;
+    const PAGE_LIMIT = 12;
     let currentPage = 1;
 
     async function loadModels() {
-      const grid = document.getElementById("modelsGrid");
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      const pageButtons = document.getElementById("pageButtons");
+      const container = document.getElementById('modelsList');
+      const pageSpan = document.getElementById('pageNumber');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
 
-      grid.innerHTML = '<p class="text-gray-400">Loading models...</p>';
+      container.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">Loading models…</p>';
 
       try {
         const params = new URLSearchParams({
           page: String(currentPage),
           limit: String(PAGE_LIMIT),
+          sort: "recent"
         });
 
-        const response = await fetch("/api/models?" + params.toString());
-        if (!response.ok) throw new Error("API error");
-
-        const data = await response.json();
+        const res = await fetch('/api/models?' + params.toString());
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
         const items = Array.isArray(data) ? data : (data.items || []);
 
         if (!items.length) {
-          grid.innerHTML = '<p class="text-gray-400">No models found.</p>';
-          renderPagination(pageButtons, prevBtn, nextBtn, {
-            page: data.page || currentPage,
-            totalPages: data.totalPages || 1,
-            hasPrev: data.hasPrev ?? currentPage > 1,
-            hasNext: data.hasNext ?? false,
-          });
+          container.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">No models found.</p>';
+          pageSpan.textContent = currentPage;
+          prevBtn.disabled = currentPage <= 1;
+          nextBtn.disabled = true;
           return;
         }
 
-        grid.innerHTML = "";
-        items.forEach((m) => {
-          const name = m.display_name || "Unknown model";
-          const slug = m.slug;
-          const avatar = m.avatar_url || "";
-          const banner = m.banner_url || "";
-          const bio = m.bio || "";
+        container.innerHTML = '';
 
-          grid.insertAdjacentHTML(
-            "beforeend",
-            `
-            <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-lg flex flex-col h-full">
-              ${banner
-                ? `<div class="h-20 bg-cover bg-center" style="background-image:url('${banner}')"></div>`
-                : `<div class="h-20 bg-gradient-to-r from-blue-500/40 to-purple-500/40"></div>`}
-              <div class="p-4 flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
-                  ${avatar
-                    ? `<img src="${avatar}" alt="${name}" class="w-full h-full object-cover">`
-                    : `<div class="w-full h-full flex items-center justify-center text-xs text-gray-400">No img</div>`}
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-sm font-semibold">${name}</h3>
-                  ${bio
-                    ? `<p class="text-xs text-gray-400 line-clamp-2 mt-1">${bio}</p>`
-                    : `<p class="text-xs text-gray-500 mt-1">No bio available.</p>`}
-                </div>
-              </div>
-              <div class="px-4 pb-4 mt-auto">
-                <button
-                  onclick="goToModel('${encodeURIComponent(slug)}')"
-                  class="w-full text-center text-xs font-medium px-3 py-2 rounded-full bg-blue-600 hover:bg-blue-500">
-                  View this model's videos
-                </button>
-              </div>
+        items.forEach(m => {
+          const slug = m.slug || '';
+          const name = m.display_name || slug || 'Unknown model';
+          const avatar = m.avatar_url || m.banner_url || '';
+          const card = document.createElement('a');
+          card.href = '/model.html?slug=' + encodeURIComponent(slug);
+          card.className = 'block max-w-5xl mx-auto rounded-3xl overflow-hidden bg-card border borderPink/70';
+
+        });
+
+        container.innerHTML = "";
+        items.forEach(m => {
+          const slug = m.slug || "";
+          const name = m.display_name || slug || "Unknown model";
+          const avatar = m.avatar_url || m.banner_url || "";
+          const card = document.createElement("a");
+          card.href = "/model.html?slug=" + encodeURIComponent(slug);
+          card.className = "block max-w-5xl mx-auto rounded-3xl overflow-hidden bg-card border border-pink-500/70";
+
+          card.innerHTML = `
+            <div class="w-full">
+              <img src="${avatar}" alt="${name}" class="w-full object-cover" style="max-height: 420px;">
             </div>
-          `
-          );
+            <div class="px-4 py-3">
+              <p class="text-lg font-semibold text-pink-400">${name}</p>
+            </div>
+          `;
+
+          container.appendChild(card);
         });
 
-        renderPagination(pageButtons, prevBtn, nextBtn, {
-          page: data.page || currentPage,
-          totalPages: data.totalPages || 1,
-          hasPrev: data.hasPrev ?? currentPage > 1,
-          hasNext: data.hasNext ?? (items.length === PAGE_LIMIT),
-        });
+        pageSpan.textContent = currentPage;
+        prevBtn.disabled = currentPage <= 1;
+        prevBtn.classList.toggle('opacity-40', prevBtn.disabled);
+
+        const hasMore = items.length === PAGE_LIMIT;
+        nextBtn.disabled = !hasMore;
+        nextBtn.classList.toggle('opacity-40', nextBtn.disabled);
       } catch (err) {
         console.error(err);
-        grid.innerHTML = '<p class="text-gray-400">Failed to load models.</p>';
+        container.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">Failed to load models.</p>';
       }
     }
 
-    function goToModel(encodedSlug) {
-      const slug = decodeURIComponent(encodedSlug);
-      window.location.href = "/?model_slug=" + encodeURIComponent(slug);
-    }
-
-    function renderPagination(pageButtons, prevBtn, nextBtn, meta) {
-      const page = meta.page || 1;
-      const totalPages = Math.max(1, meta.totalPages || 1);
-
-      prevBtn.disabled = !meta.hasPrev;
-      nextBtn.disabled = !meta.hasNext;
-
-      pageButtons.innerHTML = "";
-
-      const windowSize = 2;
-      const start = Math.max(1, page - windowSize);
-      const end = Math.min(totalPages, page + windowSize);
-
-      for (let p = start; p <= end; p++) {
-        const btn = document.createElement("button");
-        btn.textContent = String(p);
-        btn.className =
-          "px-3 py-1 rounded " +
-          (p === page
-            ? "bg-blue-600 text-white"
-            : "bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white");
-        btn.addEventListener("click", () => {
-          if (p === currentPage) return;
-          currentPage = p;
-          loadModels();
-        });
-        pageButtons.appendChild(btn);
-      }
-    }
-
-    document.getElementById("nextBtn").addEventListener("click", () => {
+    document.getElementById('nextBtn').addEventListener('click', () => {
       currentPage++;
       loadModels();
     });
 
-    document.getElementById("prevBtn").addEventListener("click", () => {
+    document.getElementById('prevBtn').addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
         loadModels();
@@ -212,6 +154,5 @@
 
     loadModels();
   </script>
-
 </body>
 </html>
