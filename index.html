@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreeOF – Watch and download high quality porn videos</title>
+  <meta name="description" content="Watch and download high quality porn videos from your favorite models. Fast streaming, clean UI and mobile-friendly experience.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://freeof.pages.dev/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freeof.pages.dev/">
+  <meta property="og:title" content="FreeOF – Watch and download high quality porn videos">
+  <meta property="og:description" content="Watch and download high quality porn videos from top models.">
+  <meta property="og:image" content="https://freeof.pages.dev/og-image.jpg">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#0f0f0f",
+            darknav: "#181818",
+            accent: "#3b82f6",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="bg-darkbg text-gray-200 min-h-screen font-sans">
+
+  <aside id="sidebar"
+         class="fixed inset-y-0 left-0 w-64 bg-darknav border-r border-gray-800 transform -translate-x-full transition-transform duration-200 z-50">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="text-lg font-semibold">Menu</span>
+      <button id="closeSidebarBtn" class="text-gray-300 hover:text-white">✕</button>
+    </div>
+    <nav class="p-4 space-y-2 text-sm">
+      <a href="/" class="block px-3 py-2 rounded hover:bg-gray-800">🏠 Home</a>
+      <a href="onlyf.html" class="block px-3 py-2 rounded hover:bg-gray-800">👩 Models</a>
+      <button id="sidebarTopBtn" class="w-full text-left px-3 py-2 rounded hover:bg-gray-800">
+        🔥 Top Videos
+      </button>
+    </nav>
+  </aside>
+
+  <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
+
+  <nav class="bg-darknav border-b border-gray-800 px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
+    <div class="flex items-center space-x-6">
+      <button id="openSidebarBtn" class="text-gray-300 hover:text-white md:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
+        </svg>
+      </button>
+      <a href="/"><h1 class="text-xl font-semibold text-white">play<span class="text-blue-500">tube</span></h1></a>
+      <ul class="hidden md:flex space-x-5 text-sm">
+        <li class="hover:text-blue-400 cursor-pointer"><a href="onlyf.html">Models</a></li>
+        <li class="text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
+      </ul>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button class="text-gray-300 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4s-4 1.79-4 4 1.79 4 4 4zm0 2c-3.31 0-6 2.69-6 6v1h12v-1c0-3.31-2.69-6-6-6z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="pt-24 px-3 pb-10">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div>
+          <h2 class="text-2xl font-semibold">Top Videos</h2>
+          <p class="text-xs text-gray-400 mt-1" id="currentFilterLabel"></p>
+        </div>
+        <div class="flex bg-gray-800 rounded-full p-1 text-sm overflow-x-auto">
+          <button class="bg-blue-600 text-white rounded-full px-4 py-1 whitespace-nowrap">All Time</button>
+          <button class="px-4 py-1 hover:text-blue-400 whitespace-nowrap">Today</button>
+          <button class="px-4 py-1 hover:text-blue-400 whitespace-nowrap">This Week</button>
+          <button class="px-4 py-1 hover:text-blue-400 whitespace-nowrap">This Month</button>
+          <button class="px-4 py-1 hover:text-blue-400 whitespace-nowrap">This Year</button>
+        </div>
+      </div>
+
+      <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+      <div class="flex justify-center items-center space-x-1 mt-10">
+        <button id="prevBtn"
+                class="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          &lt;
+        </button>
+        <div id="pageButtons" class="flex space-x-1"></div>
+        <button id="nextBtn"
+                class="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          &gt;
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const PAGE_LIMIT = 20;
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get("page") || "1", 10);
+    if (Number.isNaN(currentPage) || currentPage < 1) currentPage = 1;
+
+    let currentSort = "popular";
+    const initialModelSlug = urlParams.get("model_slug") || null;
+    const filterLabel = document.getElementById("currentFilterLabel");
+
+    function updateFilterLabel(label) {
+      const text =
+        label === "Today" ? "Showing today's trending videos" :
+        label === "This Week" ? "Showing this week's trending videos" :
+        label === "This Month" ? "Showing this month's trending videos" :
+        label === "This Year" ? "Showing this year's trending videos" :
+        "Showing most popular videos of all time";
+      filterLabel.textContent = text;
+    }
+    updateFilterLabel("All Time");
+
+    async function loadVideos() {
+      const grid = document.getElementById("videoGrid");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const pageButtons = document.getElementById("pageButtons");
+
+      grid.innerHTML = '<p class="text-gray-400">Loading videos...</p>';
+
+      try {
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          limit: String(PAGE_LIMIT),
+          sort: currentSort
+        });
+        if (initialModelSlug) {
+          params.set("model_slug", initialModelSlug);
+        }
+
+        const response = await fetch("/api/videos?" + params.toString());
+        if (!response.ok) throw new Error("API error");
+        const data = await response.json();
+        const items = Array.isArray(data) ? data : (data.items || []);
+
+        if (!items.length) {
+          grid.innerHTML = '<p class="text-gray-400">No videos found.</p>';
+          renderPagination(pageButtons, prevBtn, nextBtn, {
+            page: data.page || currentPage,
+            totalPages: data.totalPages || 1,
+            hasPrev: data.hasPrev ?? currentPage > 1,
+            hasNext: data.hasNext ?? false,
+          });
+          return;
+        }
+
+        grid.innerHTML = "";
+        items.forEach((v) => {
+          const title = v.title || "Untitled video";
+          const thumb = v.thumbnail_url || "";
+          const desc = v.description || "";
+          const channel = v.model_name || v.channel_name || "";
+          const views = typeof v.views === "number"
+            ? new Intl.NumberFormat().format(v.views) + " views"
+            : "";
+          const duration = typeof v.duration_seconds === "number"
+            ? formatDuration(v.duration_seconds)
+            : "";
+
+          grid.insertAdjacentHTML(
+            "beforeend",
+            `
+            <a href="watch.html?id=${v.id}" class="bg-gray-900 rounded-2xl overflow-hidden hover:scale-[1.02] transition block shadow-lg">
+              <div class="relative">
+                <img src="${thumb}" alt="${title}" class="w-full h-40 object-cover bg-black">
+                ${duration
+                  ? `<span class="absolute bottom-1 right-1 bg-black/70 text-xs px-1.5 py-0.5 rounded">${duration}</span>`
+                  : ""}
+              </div>
+              <div class="p-3">
+                <h3 class="text-sm font-semibold leading-tight line-clamp-2">${title}</h3>
+                <p class="text-xs text-gray-400 mt-1">
+                  ${channel ? channel : ""}${views ? (channel ? " • " : "") + views : ""}
+                </p>
+                ${desc ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${desc}</p>` : ""}
+              </div>
+            </a>
+          `
+          );
+        });
+
+        renderPagination(pageButtons, prevBtn, nextBtn, {
+          page: data.page || currentPage,
+          totalPages: data.totalPages || 1,
+          hasPrev: data.hasPrev ?? currentPage > 1,
+          hasNext: data.hasNext ?? (items.length === PAGE_LIMIT),
+        });
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<p class="text-gray-400">Failed to load videos.</p>';
+      }
+    }
+
+    function formatDuration(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return m + ":" + s.toString().padStart(2, "0");
+    }
+
+    function renderPagination(pageButtons, prevBtn, nextBtn, meta) {
+      const page = meta.page || 1;
+      const totalPages = Math.max(1, meta.totalPages || 1);
+
+      prevBtn.disabled = !meta.hasPrev;
+      nextBtn.disabled = !meta.hasNext;
+
+      pageButtons.innerHTML = "";
+
+      const windowSize = 2;
+      const start = Math.max(1, page - windowSize);
+      const end = Math.min(totalPages, page + windowSize);
+
+      for (let p = start; p <= end; p++) {
+        const btn = document.createElement("button");
+        btn.textContent = String(p);
+        btn.className =
+          "px-3 py-1 rounded " +
+          (p === page
+            ? "bg-blue-600 text-white"
+            : "bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white");
+        btn.addEventListener("click", () => {
+          if (p === currentPage) return;
+          currentPage = p;
+          const newParams = new URLSearchParams(window.location.search);
+          newParams.set("page", String(currentPage));
+          if (initialModelSlug) newParams.set("model_slug", initialModelSlug);
+          history.replaceState(null, "", "?" + newParams.toString());
+          loadVideos();
+        });
+        pageButtons.appendChild(btn);
+      }
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentPage++;
+      const newParams = new URLSearchParams(window.location.search);
+      newParams.set("page", String(currentPage));
+      if (initialModelSlug) newParams.set("model_slug", initialModelSlug);
+      history.replaceState(null, "", "?" + newParams.toString());
+      loadVideos();
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set("page", String(currentPage));
+        if (initialModelSlug) newParams.set("model_slug", initialModelSlug);
+        history.replaceState(null, "", "?" + newParams.toString());
+        loadVideos();
+      }
+    });
+
+    const filterButtons = document.querySelectorAll(
+      "main div.flex.bg-gray-800 button"
+    );
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach((b) =>
+          b.classList.remove("bg-blue-600", "text-white")
+        );
+        btn.classList.add("bg-blue-600", "text-white");
+
+        const label = btn.textContent.trim();
+        if (label === "All Time") {
+          currentSort = "popular";
+        } else {
+          currentSort = "recent";
+        }
+        updateFilterLabel(label);
+
+        currentPage = 1;
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set("page", "1");
+        if (initialModelSlug) newParams.set("model_slug", initialModelSlug);
+        history.replaceState(null, "", "?" + newParams.toString());
+
+        loadVideos();
+      });
+    });
+
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const openSidebarBtn = document.getElementById("openSidebarBtn");
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebarTopBtn = document.getElementById("sidebarTopBtn");
+
+    function openSidebar() {
+      sidebar.classList.remove("-translate-x-full");
+      overlay.classList.remove("hidden");
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    }
+
+    openSidebarBtn?.addEventListener("click", openSidebar);
+    closeSidebarBtn?.addEventListener("click", closeSidebar);
+    overlay.addEventListener("click", closeSidebar);
+    sidebarTopBtn?.addEventListener("click", () => {
+      closeSidebar();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    loadVideos();
+  </script>
+
+</body>
+</html>
