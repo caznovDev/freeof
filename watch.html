@@ -36,7 +36,8 @@
 
     <section class="mt-6">
       <h2 class="text-lg font-semibold mb-3">More from this model</h2>
-      <div id="relatedGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div id="relatedGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+      <div id="seeAllWrap"></div>
     </section>
   </main>
 
@@ -50,6 +51,7 @@
       const id = getQueryParam("id");
       const videoSection = document.getElementById("videoSection");
       const relatedGrid = document.getElementById("relatedGrid");
+      const seeAllWrap = document.getElementById("seeAllWrap");
 
       if (!id) {
         videoSection.innerHTML = "<p class='text-red-400'>Missing video id.</p>";
@@ -72,6 +74,7 @@
         const thumb = video.thumbnail_url || "";
         const modelName = video.model_name || "";
         const modelId = video.model_id;
+        const modelSlug = video.model_slug;
 
         document.title = title + " — FreeOF";
 
@@ -99,26 +102,34 @@
         items = items.filter(v => v.id !== video.id);
         if (!items.length) {
           relatedGrid.innerHTML = "<p class='text-gray-400 text-sm col-span-full'>No related videos.</p>";
-          return;
+        } else {
+          items.sort(() => Math.random() - 0.5);
+          items = items.slice(0, 8);
+
+          relatedGrid.innerHTML = "";
+          items.forEach(v => {
+            const t = v.title || "Untitled";
+            const th = v.thumbnail_url || "";
+            relatedGrid.insertAdjacentHTML("beforeend", `
+              <a href="watch.html?id=${v.id}" class="block bg-card rounded-xl overflow-hidden hover:scale-[1.02] transition">
+                <img src="${th}" class="w-full h-28 object-cover" alt="${t}">
+                <div class="p-2">
+                  <p class="text-[11px] font-semibold line-clamp-2">${t}</p>
+                </div>
+              </a>
+            `);
+          });
         }
 
-        // shuffle and pick up to 8
-        items.sort(() => Math.random() - 0.5);
-        items = items.slice(0, 8);
-
-        relatedGrid.innerHTML = "";
-        items.forEach(v => {
-          const t = v.title || "Untitled";
-          const th = v.thumbnail_url || "";
-          relatedGrid.insertAdjacentHTML("beforeend", `
-            <a href="watch.html?id=${v.id}" class="block bg-card rounded-xl overflow-hidden hover:scale-[1.02] transition">
-              <img src="${th}" class="w-full h-28 object-cover" alt="${t}">
-              <div class="p-2">
-                <p class="text-[11px] font-semibold line-clamp-2">${t}</p>
-              </div>
-            </a>
-          `);
-        });
+        if (modelSlug) {
+          seeAllWrap.innerHTML = `
+            <div class="mt-2">
+              <a href="model.html?slug=${encodeURIComponent(modelSlug)}" class="inline-flex items-center px-4 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-500">
+                Ver todos os vídeos
+              </a>
+            </div>
+          `;
+        }
       } catch (err) {
         console.error(err);
         videoSection.innerHTML = "<p class='text-red-400'>Failed to load video.</p>";

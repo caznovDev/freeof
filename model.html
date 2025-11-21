@@ -20,7 +20,7 @@
       font-family: system-ui, sans-serif;
       margin: 0;
     }
-    .video-wrapper video {
+    .thumb-wrapper img {
       width: 100%;
       height: auto;
       border-radius: 0.75rem;
@@ -38,7 +38,6 @@
 
   <main class="flex-1 mx-auto pt-24 w-full">
     <header id="modelHeader" class="flex flex-col sm:flex-row items-center sm:items-end gap-4 border-b border-gray-800 pb-4 mb-6 px-4 sm:px-6 max-w-5xl mx-auto">
-      <!-- Filled by JS -->
     </header>
 
     <section id="videosSection" class="max-w-5xl mx-auto px-0">
@@ -125,15 +124,33 @@
         videos.forEach(v => {
           const videoUrl = v.video_url || "";
           const posterUrl = v.thumbnail_url || avatar || "";
+          const title = v.title || "";
+
           const wrapper = document.createElement("div");
-          wrapper.className = "video-wrapper px-4 sm:px-0";
+          wrapper.className = "px-4 sm:px-0 mb-5";
+          wrapper.dataset.playing = "0";
 
           wrapper.innerHTML = `
-            <video controls preload="metadata" poster="${posterUrl}">
-              <source src="${videoUrl}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
+            <div class="relative group cursor-pointer thumb-wrapper">
+              <img src="${posterUrl}" alt="${title}" class="w-full rounded-xl object-cover bg-black">
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-16 h-16 rounded-full bg-black/60 flex items-center justify-center group-hover:bg-black/80 transition">
+                  <div class="ml-1 w-0 h-0 border-t-[10px] border-b-[10px] border-l-[16px] border-t-transparent border-b-transparent border-l-white"></div>
+                </div>
+              </div>
+            </div>
           `;
+
+          wrapper.addEventListener("click", () => {
+            if (wrapper.dataset.playing === "1") return;
+            wrapper.dataset.playing = "1";
+            wrapper.innerHTML = `
+              <video controls autoplay preload="none" class="w-full rounded-xl bg-black" poster="${posterUrl}">
+                <source src="${videoUrl}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            `;
+          });
 
           videosSection.appendChild(wrapper);
         });

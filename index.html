@@ -26,10 +26,24 @@
 </head>
 <body class="bg-darkbg text-gray-200 min-h-screen font-sans">
 
-  <!-- Navbar -->
-  <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-40 hidden"></div>
+
+  <aside id="mobileSidebar" class="fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform -translate-x-full transition-transform z-50">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-gray-800">
+      <span class="text-lg font-semibold text-white">free<span class="text-blue-500">OF</span></span>
+      <button id="sidebarClose" class="text-gray-400 hover:text-white" aria-label="Close menu">
+        ✕
+      </button>
+    </div>
+    <nav class="px-4 py-3 space-y-3 text-sm">
+      <a href="/" class="block text-blue-400 font-medium">Porn Videos</a>
+      <a href="/onlyf.html" class="block text-gray-300 hover:text-blue-400">Models</a>
+    </nav>
+  </aside>
+
+  <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
     <div class="flex items-center space-x-3">
-      <button class="text-gray-300 hover:text-white sm:hidden" aria-label="Menu">
+      <button id="menuBtn" class="text-gray-300 hover:text-white sm:hidden" aria-label="Menu">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
         </svg>
@@ -44,7 +58,6 @@
     </div>
   </nav>
 
-  <!-- Main -->
   <main class="pt-24 pb-10">
     <div class="flex items-center justify-between mb-6 px-4 sm:px-0 max-w-6xl mx-auto">
       <h1 class="text-2xl font-semibold">Random Videos</h1>
@@ -53,12 +66,10 @@
       </div>
     </div>
 
-    <!-- Video Grid -->
     <section class="w-full">
       <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto px-0"></div>
     </section>
 
-    <!-- Pagination -->
     <div class="flex justify-center items-center space-x-2 mt-8">
       <button id="prevBtn" class="px-3 py-1 rounded bg-gray-900 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">&lt;</button>
       <span id="pageNumber" class="px-3 py-1 rounded bg-blue-600 text-white">1</span>
@@ -67,6 +78,27 @@
   </main>
 
   <script>
+    const menuBtn = document.getElementById("menuBtn");
+    const sidebar = document.getElementById("mobileSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const sidebarClose = document.getElementById("sidebarClose");
+
+    function openSidebar() {
+      sidebar.classList.remove("-translate-x-full");
+      overlay.classList.remove("hidden");
+    }
+    function closeSidebar() {
+      sidebar.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    }
+
+    if (menuBtn) menuBtn.addEventListener("click", openSidebar);
+    if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
+    if (overlay) overlay.addEventListener("click", closeSidebar);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSidebar();
+    });
+
     const PAGE_LIMIT = 20;
     let currentPage = 1;
 
@@ -109,10 +141,9 @@
           grid.insertAdjacentHTML("beforeend", `
             <a href="watch.html?id=${id}" class="block bg-[#111827] rounded-2xl overflow-hidden hover:scale-[1.02] transition">
               <div class="relative w-full">
-                <img src="${thumb}" alt="${title}" class="w-full h-56 md:h-64 object-cover">
+                <img src="${thumb}" alt="${title}" class="w-full h-72 md:h-80 object-cover">
               </div>
               <div class="p-3">
-                <h2 class="text-sm font-semibold leading-tight line-clamp-2">${title}</h2>
                 ${modelName ? `<p class="text-xs text-gray-400 mt-1">${modelName}</p>` : ""}
               </div>
             </a>
