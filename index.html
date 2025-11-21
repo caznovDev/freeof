@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch and download high quality porn</title>
-  <meta name="description" content="Browse random high quality porn videos and OnlyFans leaks on ErroTube-style Playtube clone." />
+  <title>Watch and download high quality porn — FreeOF</title>
+  <meta name="description" content="Browse random high quality porn videos and OnlyFans leaks on FreeOF." />
   <meta name="referrer" content="no-referrer" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://freeof.pages.dev/" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -27,26 +29,25 @@
   <!-- Navbar -->
   <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
     <div class="flex items-center space-x-3">
-      <button class="text-gray-300 hover:text-white sm:hidden">
+      <button class="text-gray-300 hover:text-white sm:hidden" aria-label="Menu">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
         </svg>
       </button>
       <a href="/" class="text-xl font-semibold text-white">
-        play<span class="text-blue-500">tube</span>
+        free<span class="text-blue-500">OF</span>
       </a>
       <ul class="hidden sm:flex space-x-5 text-sm ml-4">
-        <li class="hover:text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
+        <li class="text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
         <li class="hover:text-blue-400 cursor-pointer"><a href="/onlyf.html">Models</a></li>
       </ul>
     </div>
-
   </nav>
 
   <!-- Main -->
   <main class="pt-24 pb-10">
     <div class="flex items-center justify-between mb-6 px-4 sm:px-0 max-w-6xl mx-auto">
-      <h2 class="text-2xl font-semibold">Random Videos</h2>
+      <h1 class="text-2xl font-semibold">Random Videos</h1>
       <div class="flex bg-gray-800 rounded-full p-1 text-xs sm:text-sm">
         <button class="bg-blue-600 text-white rounded-full px-4 py-1">Random</button>
       </div>
@@ -87,12 +88,13 @@
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
         const items = Array.isArray(data) ? data : (data.items || []);
+        const hasMore = !!(data.hasMore ?? (items.length === PAGE_LIMIT));
 
         if (!items.length) {
           grid.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">No videos found.</p>';
           pageSpan.textContent = currentPage;
           prevBtn.disabled = currentPage <= 1;
-          nextBtn.disabled = true;
+          nextBtn.disabled = false;
           return;
         }
 
@@ -106,9 +108,11 @@
 
           grid.insertAdjacentHTML("beforeend", `
             <a href="watch.html?id=${id}" class="block bg-[#111827] rounded-2xl overflow-hidden hover:scale-[1.02] transition">
-              <img src="${thumb}" alt="${title}" class="w-full h-44 object-cover">
+              <div class="relative w-full">
+                <img src="${thumb}" alt="${title}" class="w-full h-56 md:h-64 object-cover">
+              </div>
               <div class="p-3">
-                <h3 class="text-sm font-semibold leading-tight">${title}</h3>
+                <h2 class="text-sm font-semibold leading-tight line-clamp-2">${title}</h2>
                 ${modelName ? `<p class="text-xs text-gray-400 mt-1">${modelName}</p>` : ""}
               </div>
             </a>
@@ -119,7 +123,6 @@
         prevBtn.disabled = currentPage <= 1;
         prevBtn.classList.toggle("opacity-40", prevBtn.disabled);
 
-        const hasMore = items.length === PAGE_LIMIT;
         nextBtn.disabled = !hasMore;
         nextBtn.classList.toggle("opacity-40", nextBtn.disabled);
       } catch (err) {

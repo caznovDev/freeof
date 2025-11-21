@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch Video — ErroTube</title>
+  <title>Watch Video — FreeOF</title>
   <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="index,follow">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,7 +24,7 @@
 <body class="bg-darkbg text-gray-200 min-h-screen">
   <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-50">
     <a href="/" class="text-xl font-semibold text-white">
-      play<span class="text-blue-500">tube</span>
+      free<span class="text-blue-500">OF</span>
     </a>
     <a href="/onlyf.html" class="text-gray-400 hover:text-blue-400 text-sm">Models</a>
   </nav>
@@ -72,7 +73,7 @@
         const modelName = video.model_name || "";
         const modelId = video.model_id;
 
-        document.title = `${title} — ErroTube`;
+        document.title = title + " — FreeOF";
 
         videoSection.innerHTML = `
           <div class="mb-3">
@@ -85,7 +86,6 @@
           </video>
         `;
 
-        // related
         if (!modelId) {
           relatedGrid.innerHTML = "<p class='text-gray-400 text-sm col-span-full'>No related videos.</p>";
           return;
@@ -93,7 +93,7 @@
 
         const relRes = await fetch("/api/videos?model_id=" + encodeURIComponent(modelId) + "&limit=40&page=1&sort=recent");
         if (!relRes.ok) throw new Error("Related API error");
-        const relRaw = await relRes.json();
+        let relRaw = await relRes.json();
         let items = Array.isArray(relRaw) ? relRaw : (relRaw.items || []);
 
         items = items.filter(v => v.id !== video.id);
@@ -102,6 +102,7 @@
           return;
         }
 
+        // shuffle and pick up to 8
         items.sort(() => Math.random() - 0.5);
         items = items.slice(0, 8);
 
@@ -111,7 +112,7 @@
           const th = v.thumbnail_url || "";
           relatedGrid.insertAdjacentHTML("beforeend", `
             <a href="watch.html?id=${v.id}" class="block bg-card rounded-xl overflow-hidden hover:scale-[1.02] transition">
-              <img src="${th}" class="w-full h-24 object-cover" alt="${t}">
+              <img src="${th}" class="w-full h-28 object-cover" alt="${t}">
               <div class="p-2">
                 <p class="text-[11px] font-semibold line-clamp-2">${t}</p>
               </div>
