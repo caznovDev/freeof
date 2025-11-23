@@ -17,7 +17,7 @@ export default function Navbar() {
       )}
 
       <aside
-        className={\`fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform \${open ? "translate-x-0" : "-translate-x-full"} transition-transform z-50 sm:hidden\`}
+        className={`fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform ${open ? "translate-x-0" : "-translate-x-full"} transition-transform z-50 sm:hidden\`}
       >
         <div className="px-4 py-3 flex items-center justify-between border-b border-gray-800">
           <span className="text-lg font-semibold text-white">
