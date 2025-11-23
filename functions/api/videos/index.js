@@ -1,187 +1,155 @@
-const DEFAULT_API_SECRET = "freeof_super_secret_7b3e9d";
-
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, x-api-key",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
-    }
-  });
-}
-
-function checkAuth(request, env) {
-  const url = new URL(request.url);
-  const headerKey = request.headers.get("x-api-key");
-  const queryKey = url.searchParams.get("key");
-  const provided = headerKey || queryKey;
-  const expected = env.API_SECRET || DEFAULT_API_SECRET;
-  return !!provided && provided === expected;
-}
-
-export async function onRequestOptions(context) {
-  return jsonResponse({}, 204);
-}
+import { jsonResponse, errorResponse, getPagination, requireApiKey } from "../../_utils";
 
 export async function onRequestGet(context) {
-  const { env, request } = context;
+  const { request, env } = context;
+  const db = env.DB;
   const url = new URL(request.url);
+  const searchParams = url.searchParams;
 
-  const id = url.searchParams.get("id");
-  const modelId = url.searchParams.get("model_id");
-  const modelSlug = url.searchParams.get("model_slug");
-  const sort = (url.searchParams.get("sort") || "recent").toLowerCase();
-  let page = parseInt(url.searchParams.get("page") || "1", 10);
-  let limit = parseInt(url.searchParams.get("limit") || "20", 10);
-
-  if (!Number.isFinite(page) || page < 1) page = 1;
-  if (!Number.isFinite(limit) || limit <= 0) limit = 20;
-  if (limit > 100) limit = 100;
-
-  const where = [];
-  const params = [];
-
-  if (id) {
-    where.push("v.id = ?");
-    params.push(id);
-  }
-  if (modelId) {
-    where.push("v.model_id = ?");
-    params.push(modelId);
-  }
-  if (modelSlug) {
-    where.push("m.slug = ?");
-    params.push(modelSlug);
-  }
-
-  let orderBy = "v.created_at DESC";
-  if (sort === "popular") {
-    orderBy = "v.views DESC, v.created_at DESC";
-  } else if (sort === "random") {
-    orderBy = "RANDOM()";
-  }
-
-  let sql = `
-    SELECT v.*, m.display_name AS model_name, m.slug AS model_slug
-    FROM videos v
-    LEFT JOIN models m ON v.model_id = m.id
-  `;
-
-  if (where.length) {
-    sql += " WHERE " + where.join(" AND ");
-  }
-
-  const offset = (page - 1) * limit;
-  sql += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
-  params.push(limit, offset);
+  const id = searchParams.get("id");
+  const modelId = searchParams.get("model_id");
+  const modelSlug = searchParams.get("model_slug");
 
   try {
-    const { results } = await env.DB.prepare(sql).bind(...params).all();
+    if (id) {
+      const stmt = db.prepare(`
+        SELECT v.*, m.display_name AS model_name, m.slug AS model_slug
+        FROM videos v
+        LEFT JOIN models m ON v.model_id = m.id
+        WHERE v.id = ?
+      `);
+      const row = await stmt.get(id);
+      if (!row) return jsonResponse({ items: [] }, 404);
+      return jsonResponse({ items: [row] });
+    }
+
+    let where = [];
+    let params = [];
+
+    if (modelId) {
+      where.push("v.model_id = ?");
+      params.push(modelId);
+    }
+
+    if (modelSlug) {
+      where.push("m.slug = ?");
+      params.push(modelSlug);
+    }
+
+    const whereClause = where.length ? "WHERE " + where.join(" AND ") : "";
+    const { page, limit, offset } = getPagination(searchParams, 20, 100);
+    const sort = (searchParams.get("sort") || "recent").toLowerCase();
+
+    let orderBy = "v.created_at DESC";
+    if (sort === "popular") orderBy = "v.views DESC";
+
+    const rows = await db
+      .prepare(
+        `
+        SELECT v.*, m.display_name AS model_name, m.slug AS model_slug
+        FROM videos v
+        LEFT JOIN models m ON v.model_id = m.id
+        ${whereClause}
+        ORDER BY ${orderBy}
+        LIMIT ? OFFSET ?
+      `
+      )
+      .bind(...params, limit, offset)
+      .all();
+
+    const countRow = await db
+      .prepare(
+        `
+        SELECT COUNT(*) as c
+        FROM videos v
+        LEFT JOIN models m ON v.model_id = m.id
+        ${whereClause}
+      `
+      )
+      .bind(...params)
+      .all();
+
+    const total = countRow.results?.[0]?.c || 0;
+    const hasMore = page * limit < total;
 
     return jsonResponse({
-      items: results,
+      items: rows.results || [],
       page,
       limit,
-      hasMore: results.length === limit
+      total,
+      hasMore
     });
   } catch (err) {
-    return jsonResponse(
-      { error: "internal_error", message: String(err) },
-      500
-    );
+    return errorResponse(err.message || "Videos error", 500);
   }
 }
 
 export async function onRequestPost(context) {
-  const { env, request } = context;
-
-  if (!checkAuth(request, env)) {
-    return jsonResponse({ error: "unauthorized" }, 401);
-  }
-
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonResponse({ error: "invalid_json" }, 400);
-  }
-
-  let {
-    slug,
-    title,
-    thumbnail_url,
-    video_url,
-    channel_name,
-    views,
-    duration_seconds,
-    description,
-    model_id,
-    model_slug
-  } = body || {};
-
-  if (!video_url || !title) {
-    return jsonResponse({ error: "missing_fields", message: "title and video_url are required" }, 400);
-  }
+  const { request, env } = context;
+  const db = env.DB;
 
   try {
-    if (!model_id && model_slug) {
-      const findModel = await env.DB
-        .prepare("SELECT id FROM models WHERE slug = ?")
-        .bind(model_slug)
-        .first();
-      if (findModel && findModel.id) {
-        model_id = findModel.id;
-      }
+    requireApiKey(request, env);
+    const body = await request.json();
+
+    const {
+      slug,
+      title,
+      thumbnail_url = null,
+      video_url,
+      channel_name = null,
+      views = 0,
+      duration_seconds = null,
+      description = null,
+      model_id = null
+    } = body;
+
+    if (!slug || !title || !video_url) {
+      return errorResponse("Missing slug, title or video_url", 400);
     }
 
-    if (!slug) {
-      if (crypto && crypto.randomUUID) {
-        slug = crypto.randomUUID();
-      } else {
-        slug = "v_" + Date.now().toString(16);
-      }
-    }
-
-    if (typeof views !== "number" || views < 0) views = 0;
-
-    const stmt = `
-      INSERT INTO videos
-        (slug, title, thumbnail_url, video_url, channel_name, views, duration_seconds, description, model_id)
+    const stmt = db.prepare(`
+      INSERT INTO videos (
+        slug, title, thumbnail_url, video_url,
+        channel_name, views, duration_seconds,
+        description, model_id
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(slug) DO UPDATE SET
-        title = excluded.title,
-        thumbnail_url = excluded.thumbnail_url,
-        video_url = excluded.video_url,
-        channel_name = excluded.channel_name,
-        views = excluded.views,
-        duration_seconds = excluded.duration_seconds,
-        description = excluded.description,
-        model_id = excluded.model_id
-      RETURNING *;
-    `;
+    `);
 
-    const result = await env.DB
-      .prepare(stmt)
+    const info = await stmt
       .bind(
         slug,
         title,
-        thumbnail_url || null,
+        thumbnail_url,
         video_url,
-        channel_name || null,
+        channel_name,
         views,
-        duration_seconds || null,
-        description || null,
-        model_id || null
+        duration_seconds,
+        description,
+        model_id
       )
-      .first();
+      .run();
 
-    return jsonResponse({ item: result || null });
-  } catch (err) {
     return jsonResponse(
-      { error: "internal_error", message: String(err) },
-      500
+      {
+        id: info.meta.last_row_id,
+        slug,
+        title,
+        thumbnail_url,
+        video_url,
+        channel_name,
+        views,
+        duration_seconds,
+        description,
+        model_id
+      },
+      201
     );
+  } catch (err) {
+    if (err.message === "Unauthorized") {
+      return errorResponse("Unauthorized", 401);
+    }
+    return errorResponse(err.message || "Videos insert error", 500);
   }
 }

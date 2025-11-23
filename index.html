@@ -1,180 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch and download high quality porn — FreeOF</title>
-  <meta name="description" content="Browse random high quality porn videos and OnlyFans leaks on FreeOF." />
-  <meta name="referrer" content="no-referrer" />
-  <meta name="robots" content="index,follow" />
-  <link rel="canonical" href="https://freeof.pages.dev/" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            darkbg: "#0f0f0f",
-            darknav: "#181818",
-            accent: "#3b82f6",
-            card: "#111827"
-          },
-        },
-      },
-    };
-  </script>
-</head>
-<body class="bg-darkbg text-gray-200 min-h-screen font-sans">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-40 hidden"></div>
+    <title>FreeOF — Watch and Download High Quality Porn & OnlyFans Leaks</title>
+    <meta
+      name="description"
+      content="FreeOF lets you watch and download high quality porn videos and leaked OnlyFans packs from your favorite models."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="canonical" href="https://freeof.pages.dev/" />
 
-  <aside id="mobileSidebar" class="fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform -translate-x-full transition-transform z-50">
-    <div class="px-4 py-3 flex items-center justify-between border-b border-gray-800">
-      <span class="text-lg font-semibold text-white">free<span class="text-blue-500">OF</span></span>
-      <button id="sidebarClose" class="text-gray-400 hover:text-white" aria-label="Close menu">
-        ✕
-      </button>
-    </div>
-    <nav class="px-4 py-3 space-y-3 text-sm">
-      <a href="/" class="block text-blue-400 font-medium">Porn Videos</a>
-      <a href="/onlyf.html" class="block text-gray-300 hover:text-blue-400">Models</a>
-    </nav>
-  </aside>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FreeOF — High Quality Porn & OnlyFans Leaks" />
+    <meta
+      property="og:description"
+      content="Browse random high quality porn videos and OnlyFans leaks from top creators."
+    />
+    <meta property="og:url" content="https://freeof.pages.dev/" />
+    <meta property="og:image" content="https://freeof.pages.dev/og-image.jpg" />
 
-  <nav class="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
-    <div class="flex items-center space-x-3">
-      <button id="menuBtn" class="text-gray-300 hover:text-white sm:hidden" aria-label="Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
-        </svg>
-      </button>
-      <a href="/" class="text-xl font-semibold text-white">
-        free<span class="text-blue-500">OF</span>
-      </a>
-      <ul class="hidden sm:flex space-x-5 text-sm ml-4">
-        <li class="text-blue-400 cursor-pointer"><a href="/">Porn Videos</a></li>
-        <li class="hover:text-blue-400 cursor-pointer"><a href="/onlyf.html">Models</a></li>
-      </ul>
-    </div>
-  </nav>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FreeOF — High Quality Porn & OnlyFans Leaks" />
+    <meta
+      name="twitter:description"
+      content="Random NSFW videos, leaked OnlyFans models and HD porn content."
+    />
+    <meta name="twitter:image" content="https://freeof.pages.dev/og-image.jpg" />
 
-  <main class="pt-24 pb-10">
-    <div class="flex items-center justify-between mb-6 px-4 sm:px-0 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-semibold">Random Videos</h1>
-      <div class="flex bg-gray-800 rounded-full p-1 text-xs sm:text-sm">
-        <button class="bg-blue-600 text-white rounded-full px-4 py-1">Random</button>
-      </div>
-    </div>
-
-    <section class="w-full">
-      <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto px-0"></div>
-    </section>
-
-    <div class="flex justify-center items-center space-x-2 mt-8">
-      <button id="prevBtn" class="px-3 py-1 rounded bg-gray-900 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">&lt;</button>
-      <span id="pageNumber" class="px-3 py-1 rounded bg-blue-600 text-white">1</span>
-      <button id="nextBtn" class="px-3 py-1 rounded bg-gray-900 text-gray-300 hover:bg-blue-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">&gt;</button>
-    </div>
-  </main>
-
-  <script>
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.getElementById("mobileSidebar");
-    const overlay = document.getElementById("sidebarOverlay");
-    const sidebarClose = document.getElementById("sidebarClose");
-
-    function openSidebar() {
-      sidebar.classList.remove("-translate-x-full");
-      overlay.classList.remove("hidden");
-    }
-    function closeSidebar() {
-      sidebar.classList.add("-translate-x-full");
-      overlay.classList.add("hidden");
-    }
-
-    if (menuBtn) menuBtn.addEventListener("click", openSidebar);
-    if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
-    if (overlay) overlay.addEventListener("click", closeSidebar);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSidebar();
-    });
-
-    const PAGE_LIMIT = 20;
-    let currentPage = 1;
-
-    async function loadVideos() {
-      const grid = document.getElementById("videoGrid");
-      const pageSpan = document.getElementById("pageNumber");
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-
-      grid.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">Loading videos...</p>';
-
-      try {
-        const params = new URLSearchParams({
-          page: String(currentPage),
-          limit: String(PAGE_LIMIT),
-        });
-
-        const res = await fetch("/api/videos/random?" + params.toString());
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        const items = Array.isArray(data) ? data : (data.items || []);
-        const hasMore = !!(data.hasMore ?? (items.length === PAGE_LIMIT));
-
-        if (!items.length) {
-          grid.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">No videos found.</p>';
-          pageSpan.textContent = currentPage;
-          prevBtn.disabled = currentPage <= 1;
-          nextBtn.disabled = false;
-          return;
-        }
-
-        grid.innerHTML = "";
-
-        items.forEach(v => {
-          const title = v.title || "Untitled";
-          const thumb = v.thumbnail_url || "";
-          const modelName = v.model_name || "";
-          const id = v.id;
-
-          grid.insertAdjacentHTML("beforeend", `
-            <a href="watch.html?id=${id}" class="block bg-[#111827] rounded-2xl overflow-hidden hover:scale-[1.02] transition">
-              <div class="relative w-full">
-                <img src="${thumb}" alt="${title}" class="w-full h-72 md:h-80 object-cover">
-              </div>
-              <div class="p-3">
-                ${modelName ? `<p class="text-xs text-gray-400 mt-1">${modelName}</p>` : ""}
-              </div>
-            </a>
-          `);
-        });
-
-        pageSpan.textContent = currentPage;
-        prevBtn.disabled = currentPage <= 1;
-        prevBtn.classList.toggle("opacity-40", prevBtn.disabled);
-
-        nextBtn.disabled = !hasMore;
-        nextBtn.classList.toggle("opacity-40", nextBtn.disabled);
-      } catch (err) {
-        console.error(err);
-        grid.innerHTML = '<p class="text-gray-400 px-4 sm:px-0">Failed to load videos.</p>';
-      }
-    }
-
-    document.getElementById("nextBtn").addEventListener("click", () => {
-      currentPage++;
-      loadVideos();
-    });
-
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      if (currentPage > 1) {
-        currentPage--;
-        loadVideos();
-      }
-    });
-
-    loadVideos();
-  </script>
-</body>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-darkbg text-gray-200 min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
