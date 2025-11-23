@@ -1,113 +1,124 @@
-import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useState } from "react";
 
-export default function Navbar() {
+const Navbar = () => {
   const [open, setOpen] = useState(false);
 
-  const linkBase =
-    "text-sm px-2 py-1 rounded-full hover:text-blue-400 transition";
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/onlyf", label: "Creators" },
+    { href: "/model", label: "Models" },
+    { href: "/watch", label: "Watch" },
+  ];
 
   return (
-    <>
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 sm:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform ${open ? "translate-x-0" : "-translate-x-full"} transition-transform z-50 sm:hidden\`}
-      >
-        <div className="px-4 py-3 flex items-center justify-between border-b border-gray-800">
-          <span className="text-lg font-semibold text-white">
-            free<span className="text-blue-500">OF</span>
+    <header className="bg-darknav text-white sticky top-0 z-40 shadow-md">
+      <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+        {/* Logo */}
+        <a href="/" className="flex items-center gap-2">
+          <span className="text-xl font-bold">FreeOF</span>
+          <span className="text-xs uppercase tracking-widest text-gray-400">
+            beta
           </span>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-gray-400 hover:text-white"
-            aria-label="Close menu"
+        </a>
+
+        {/* Links desktop */}
+        <ul className="hidden sm:flex items-center gap-6 text-sm">
+          {links.map((link) => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                className="text-gray-200 hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        {/* Botão CTA + menu mobile */}
+        <div className="flex items-center gap-3">
+          <a
+            href="/about"
+            className="hidden sm:inline-block text-xs font-medium px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 transition-colors"
           >
-            ✕
+            How it works
+          </a>
+
+          {/* Botão hamburguer (mobile) */}
+          <button
+            type="button"
+            className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 hover:bg-gray-800 focus:outline-none"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-label="Toggle navigation menu"
+          >
+            <span className="sr-only">Open menu</span>
+            <div className="space-y-1.5">
+              <span className="block w-5 h-0.5 bg-gray-200"></span>
+              <span className="block w-5 h-0.5 bg-gray-200"></span>
+              <span className="block w-5 h-0.5 bg-gray-200"></span>
+            </div>
           </button>
         </div>
-        <nav className="px-4 py-3 space-y-3 text-sm">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive
-                ? "block text-blue-400 font-medium"
-                : "block text-gray-300 hover:text-blue-400"
-            }
+      </nav>
+
+      {/* Menu lateral mobile */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-darknav shadow-xl transform ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } transition-transform z-50 sm:hidden`}
+      >
+        <div className="px-4 py-3 flex items-center justify-between border-b border-gray-800">
+          <span className="font-semibold">FreeOF</span>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-800"
+            onClick={() => setOpen(false)}
+            aria-label="Close navigation menu"
           >
-            Porn Videos
-          </NavLink>
-          <NavLink
-            to="/onlyf"
-            className={({ isActive }) =>
-              isActive
-                ? "block text-blue-400 font-medium"
-                : "block text-gray-300 hover:text-blue-400"
-            }
-          >
-            Models
-          </NavLink>
+            <span className="sr-only">Close menu</span>
+            <span className="block w-4 h-0.5 bg-gray-200 rotate-45 translate-y-0.5"></span>
+            <span className="block w-4 h-0.5 bg-gray-200 -rotate-45 -translate-y-0.5"></span>
+          </button>
+        </div>
+
+        <nav className="px-4 py-4">
+          <ul className="space-y-3">
+            {links.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className="block py-2 text-gray-200 hover:text-white hover:bg-gray-800 rounded-md px-2"
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 border-t border-gray-800 pt-4">
+            <a
+              href="/about"
+              className="block w-full text-center text-sm font-medium px-3 py-2 rounded-full bg-primary hover:bg-primary/90 transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Learn more
+            </a>
+          </div>
         </nav>
       </aside>
 
-      <nav className="bg-darknav border-b border-gray-800 px-4 sm:px-6 py-3 flex items-center justify-between fixed top-0 w-full z-30">
-        <div className="flex items-center space-x-3">
-          <button
-            className="text-gray-300 hover:text-white sm:hidden"
-            aria-label="Menu"
-            onClick={() => setOpen(true)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-7 h-7"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5"
-              />
-            </svg>
-          </button>
-          <Link
-            to="/"
-            className="text-xl font-semibold text-white"
-            data-no-dual="1"
-          >
-            free<span className="text-blue-500">OF</span>
-          </Link>
-          <ul className="hidden sm:flex space-x-5 text-sm ml-4">
-            <li>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  \`\${linkBase} \${isActive ? "text-blue-400" : "text-gray-300"}\`
-                }
-              >
-                Porn Videos
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/onlyf"
-                className={({ isActive }) =>
-                  \`\${linkBase} \${isActive ? "text-blue-400" : "text-gray-300"}\`
-                }
-              >
-                Models
-              </NavLink>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </>
+      {/* Overlay escuro atrás do menu mobile */}
+      {open && (
+        <button
+          type="button"
+          className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+          onClick={() => setOpen(false)}
+          aria-label="Close menu backdrop"
+        />
+      )}
+    </header>
   );
-}
+};
+
+export default Navbar;
