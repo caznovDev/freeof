@@ -44,7 +44,7 @@ function shouldShowEntryPopup(cooldownMinutes = 60) {
  * - On "accept": opens current page in a new tab and redirects THIS tab to `adUrl`.
  * - On "leave": just redirects to `adUrl`.
  */
-export function useEntryGate({ cooldownMinutes = 60, adUrl = AD_URL } = {}) {
+export function useEntryGate({ cooldownMinutes = 1, adUrl = AD_URL } = {}) {
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
@@ -134,7 +134,7 @@ function fadeAndRedirect(adUrl) {
 export function useDualRedirect({
   adUrl = AD_URL,
   selector = "a",
-  delayMinutes = 7
+  delayMinutes = 2
 } = {}) {
   useEffect(() => {
     if (typeof document === "undefined") return;
