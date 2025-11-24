@@ -15,7 +15,7 @@ export default function VideoGridCard({ video }) {
       <div className="relative w-full">
         <img
           src={thumb}
-          alt={title}
+          alt={modelName}
           className="w-full h-72 md:h-80 object-cover"
         />
       </div>
