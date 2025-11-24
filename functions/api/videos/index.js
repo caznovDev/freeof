@@ -1,155 +1,130 @@
-import { jsonResponse, errorResponse, getPagination, requireApiKey } from "../../_utils";
+// functions/api/videos/index.js
 
-export async function onRequestGet(context) {
-  const { request, env } = context;
-  const db = env.DB;
+export const onRequestGet = async ({ env, request }) => {
   const url = new URL(request.url);
-  const searchParams = url.searchParams;
 
-  const id = searchParams.get("id");
-  const modelId = searchParams.get("model_id");
-  const modelSlug = searchParams.get("model_slug");
+  const id = url.searchParams.get("id");
+  const modelId = url.searchParams.get("model_id");
+  const modelSlug = url.searchParams.get("model_slug");
+
+  const sortParam = (url.searchParams.get("sort") || "recent").toLowerCase();
+
+  let page = parseInt(url.searchParams.get("page") || "1", 10);
+  let limit = parseInt(url.searchParams.get("limit") || "24", 10);
+
+  if (!Number.isFinite(page) || page < 1) page = 1;
+  if (!Number.isFinite(limit) || limit < 1) limit = 24;
+  if (limit > 100) limit = 100;
+
+  const offset = (page - 1) * limit;
 
   try {
+    // =========================
+    // 1) Buscar UM vídeo por ID
+    // =========================
     if (id) {
-      const stmt = db.prepare(`
-        SELECT v.*, m.display_name AS model_name, m.slug AS model_slug
+      const stmt = env.DB.prepare(`
+        SELECT
+          v.*,
+          m.slug         AS model_slug,
+          m.display_name AS model_name
         FROM videos v
         LEFT JOIN models m ON v.model_id = m.id
         WHERE v.id = ?
       `);
-      const row = await stmt.get(id);
-      if (!row) return jsonResponse({ items: [] }, 404);
-      return jsonResponse({ items: [row] });
+
+      const video = await stmt.bind(id).first();
+
+      if (!video) {
+        return jsonResponse({ error: "Video not found" }, 404);
+      }
+
+      return jsonResponse(video);
     }
 
-    let where = [];
-    let params = [];
+    // =====================================
+    // 2) Listar vídeos (geral ou por modelo)
+    // =====================================
+    const whereClauses = [];
+    const params = [];
+    let joinModels = false;
 
     if (modelId) {
-      where.push("v.model_id = ?");
+      whereClauses.push("v.model_id = ?");
       params.push(modelId);
     }
 
     if (modelSlug) {
-      where.push("m.slug = ?");
+      joinModels = true;
+      whereClauses.push("m.slug = ?");
       params.push(modelSlug);
     }
 
-    const whereClause = where.length ? "WHERE " + where.join(" AND ") : "";
-    const { page, limit, offset } = getPagination(searchParams, 20, 100);
-    const sort = (searchParams.get("sort") || "recent").toLowerCase();
+    const whereSql =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
-    let orderBy = "v.created_at DESC";
-    if (sort === "popular") orderBy = "v.views DESC";
+    let orderBySql = "ORDER BY v.created_at DESC"; // default: recentes
+    if (sortParam === "popular") {
+      orderBySql = "ORDER BY v.views DESC, v.created_at DESC";
+    }
 
-    const rows = await db
-      .prepare(
-        `
-        SELECT v.*, m.display_name AS model_name, m.slug AS model_slug
-        FROM videos v
-        LEFT JOIN models m ON v.model_id = m.id
-        ${whereClause}
-        ORDER BY ${orderBy}
-        LIMIT ? OFFSET ?
-      `
-      )
-      .bind(...params, limit, offset)
-      .all();
+    const baseFrom = joinModels
+      ? `FROM videos v
+         LEFT JOIN models m ON v.model_id = m.id`
+      : `FROM videos v
+         LEFT JOIN models m ON v.model_id = m.id`; // ainda fazemos join pra ter model_slug/model_name
 
-    const countRow = await db
-      .prepare(
-        `
-        SELECT COUNT(*) as c
-        FROM videos v
-        LEFT JOIN models m ON v.model_id = m.id
-        ${whereClause}
-      `
-      )
-      .bind(...params)
-      .all();
+    // ---- Contagem total ----
+    const countStmt = env.DB.prepare(`
+      SELECT COUNT(*) AS total
+      ${baseFrom}
+      ${whereSql}
+    `);
 
-    const total = countRow.results?.[0]?.c || 0;
+    const countRow = await countStmt.bind(...params).first();
+    const total = countRow?.total || 0;
+
+    // ---- Lista de vídeos ----
+    const listStmt = env.DB.prepare(`
+      SELECT
+        v.*,
+        m.slug         AS model_slug,
+        m.display_name AS model_name
+      ${baseFrom}
+      ${whereSql}
+      ${orderBySql}
+      LIMIT ? OFFSET ?
+    `);
+
+    const listParams = [...params, limit, offset];
+    const { results } = await listStmt.bind(...listParams).all();
+
     const hasMore = page * limit < total;
 
     return jsonResponse({
-      items: rows.results || [],
+      items: results || [],
       page,
       limit,
       total,
       hasMore
     });
   } catch (err) {
-    return errorResponse(err.message || "Videos error", 500);
-  }
-}
-
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const db = env.DB;
-
-  try {
-    requireApiKey(request, env);
-    const body = await request.json();
-
-    const {
-      slug,
-      title,
-      thumbnail_url = null,
-      video_url,
-      channel_name = null,
-      views = 0,
-      duration_seconds = null,
-      description = null,
-      model_id = null
-    } = body;
-
-    if (!slug || !title || !video_url) {
-      return errorResponse("Missing slug, title or video_url", 400);
-    }
-
-    const stmt = db.prepare(`
-      INSERT INTO videos (
-        slug, title, thumbnail_url, video_url,
-        channel_name, views, duration_seconds,
-        description, model_id
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const info = await stmt
-      .bind(
-        slug,
-        title,
-        thumbnail_url,
-        video_url,
-        channel_name,
-        views,
-        duration_seconds,
-        description,
-        model_id
-      )
-      .run();
-
+    // Log simples pro console do Worker
+    console.error("Error in /api/videos:", err);
     return jsonResponse(
-      {
-        id: info.meta.last_row_id,
-        slug,
-        title,
-        thumbnail_url,
-        video_url,
-        channel_name,
-        views,
-        duration_seconds,
-        description,
-        model_id
-      },
-      201
+      { error: "Internal server error" },
+      500
     );
-  } catch (err) {
-    if (err.message === "Unauthorized") {
-      return errorResponse("Unauthorized", 401);
-    }
-    return errorResponse(err.message || "Videos insert error", 500);
   }
+};
+
+// Helper pra resposta JSON
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    }
+  });
 }
