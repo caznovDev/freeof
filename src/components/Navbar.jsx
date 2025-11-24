@@ -5,9 +5,7 @@ const Navbar = () => {
 
   const links = [
     { href: "/", label: "Home" },
-    { href: "/onlyf", label: "Creators" },
-    { href: "/model", label: "Models" },
-    { href: "/watch", label: "Watch" },
+    { href: "/onlyf", label: "Models" },
   ];
 
   return (
@@ -37,13 +35,7 @@ const Navbar = () => {
 
         {/* Botão CTA + menu mobile */}
         <div className="flex items-center gap-3">
-          <a
-            href="/about"
-            className="hidden sm:inline-block text-xs font-medium px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 transition-colors"
-          >
-            How it works
-          </a>
-
+          
           {/* Botão hamburguer (mobile) */}
           <button
             type="button"
@@ -96,15 +88,7 @@ const Navbar = () => {
             ))}
           </ul>
 
-          <div className="mt-6 border-t border-gray-800 pt-4">
-            <a
-              href="/about"
-              className="block w-full text-center text-sm font-medium px-3 py-2 rounded-full bg-primary hover:bg-primary/90 transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Learn more
-            </a>
-          </div>
+          
         </nav>
       </aside>
 
