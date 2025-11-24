@@ -22,7 +22,7 @@ export default function Home() {
           limit: String(PAGE_LIMIT)
         });
         const res = await fetch(`/api/videos/random?${params.toString()}`);
-        if (!res.ok) throw new Error("API error");
+        if (!res.ok) throw new Error("error");
         const data = await res.json();
         const items = Array.isArray(data) ? data : data.items || [];
         if (!cancelled) {
@@ -44,16 +44,16 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>Random Videos — FreeOF</title>
+        <title>Onlyfans Leaks Videos — FreeOF</title>
         <meta
           name="description"
-          content="Watch random high quality porn videos and leaked OnlyFans content on FreeOF."
+          content="Watch high quality porn videos and leaked OnlyFans content on FreeOF."
         />
         <link rel="canonical" href="https://freeof.pages.dev/" />
       </Helmet>
 
       <div className="flex items-center justify-between mb-6 px-4 sm:px-0 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-semibold">Random Videos</h1>
+        <h1 className="text-2xl font-semibold">OF Videos</h1>
         <div className="flex bg-gray-800 rounded-full p-1 text-xs sm:text-sm">
           <button className="bg-blue-600 text-white rounded-full px-4 py-1">
             Random
