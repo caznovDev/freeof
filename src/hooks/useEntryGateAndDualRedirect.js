@@ -64,7 +64,7 @@ export function useEntryGate({ cooldownMinutes = 60, adUrl = AD_URL } = {}) {
   return { showPopup, accept, leave };
 }
 
-function canDualRedirect(delayMinutes = 7) {
+function canDualRedirect(delayMinutes = 2) {
   const pageStart =
     window.__freeof_page_start || (window.__freeof_page_start = nowMs());
   const delayMs = delayMinutes * 60 * 1000;
