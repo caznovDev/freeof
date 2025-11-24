@@ -1,4 +1,4 @@
-Videos React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import VideoGridCard from "../components/VideoGridCard";
 
@@ -44,20 +44,21 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>High Quality Porn Videos — FreeOF</title>
+        <title>Random Videos — FreeOF</title>
         <meta
           name="description"
-          content="Videosm high quality porn videos and leaked OnlyFans content on FreeOF."
+          content="Watch random high quality porn videos and leaked OnlyFans content on FreeOF."
         />
         <link rel="canonical" href="https://freeof.pages.dev/" />
       </Helmet>
 
       <div className="flex items-center justify-between mb-6 px-4 sm:px-0 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-semibold">Latest Videos</h1>
+        <h1 className="text-2xl font-semibold">Random Videos</h1>
         <div className="flex bg-gray-800 rounded-full p-1 text-xs sm:text-sm">
           <button className="bg-blue-600 text-white rounded-full px-4 py-1">
             Random
-          </button>h1       </div>
+          </button>
+        </div>
       </div>
 
       <section className="w-full">
