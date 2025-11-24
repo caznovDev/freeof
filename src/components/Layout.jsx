@@ -1,9 +1,10 @@
 import React from "react";
 import Navbar from "./Navbar";
-import { useEntryGate, useDualRedirect } from "../hooks/useEntryGateAndDualRedirect";
-
-const AD_URL =
-  "https://www.effectivegatecpm.com/fspkxf7f0?key=ab4f7c97fff46fa5a9a80f09a863e87b";
+import {
+  useEntryGate,
+  useDualRedirect,
+  AD_URL
+} from "../hooks/useEntryGateAndDualRedirect";
 
 export default function Layout({ children }) {
   const { showPopup, accept, leave } = useEntryGate({
@@ -24,33 +25,39 @@ export default function Layout({ children }) {
 
       {showPopup && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
-            <h2 className="text-xl font-bold mb-2">
-              Content warning & monetization notice
-            </h2>
-            <p className="text-sm text-gray-300 mb-2">
-              This site contains adult content and monetized external links.
-              By continuing, you confirm you are over 18 and agree to open the
-              site in a new tab.
-            </p>
-            <p className="text-xs text-gray-400 mb-4">
-              The current tab may be redirected to an advertising partner
-              (Adsterra). You can always come back to FreeOF from the new tab.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={leave}
-                className="px-3 py-1.5 text-sm rounded-full border border-gray-500 text-gray-100 bg-transparent hover:bg-gray-800"
-              >
-                Leave
-              </button>
-              <button
-                onClick={accept}
-                className="px-4 py-1.5 text-sm rounded-full bg-blue-600 text-white hover:bg-blue-500 font-semibold"
-              >
-                Continue
-              </button>
+          <div className="bg-[#111111] border border-gray-700 rounded-2xl max-w-sm w-full mx-4 px-6 py-8 text-center shadow-2xl">
+            {/* “Logo” similar to Erome */}
+            <div className="mb-6 text-3xl font-semibold tracking-tight">
+              <span className="text-white">ero</span>
+              <span className="text-pink-400">me</span>
             </div>
+
+            {/* Main disclaimer – almost the same text as the screenshot */}
+            <p className="text-sm text-gray-100 leading-relaxed mb-6">
+              This site is an adult community that contains sexually explicit
+              material. You must be 18 years old or over to enter.
+            </p>
+
+            {/* Extra small note about monetization / redirect behaviour */}
+            <p className="text-[11px] text-gray-400 mb-6">
+              By clicking &quot;I am 18 or older – enter&quot; you agree that
+              the site may open in a new tab and the current tab may be
+              redirected to an advertising partner.
+            </p>
+
+            <button
+              onClick={accept}
+              className="mb-3 w-full rounded-full bg-pink-500 py-3 text-sm font-semibold tracking-wide text-white hover:bg-pink-400 transition"
+            >
+              I AM 18 OR OLDER – ENTER
+            </button>
+
+            <button
+              onClick={leave}
+              className="w-full rounded-full border border-gray-500 py-2.5 text-xs font-medium text-gray-300 hover:bg-gray-900 transition"
+            >
+              LEAVE
+            </button>
           </div>
         </div>
       )}
