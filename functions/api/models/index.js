@@ -1,93 +1,89 @@
-import { jsonResponse, errorResponse, getPagination, requireApiKey } from "../../_utils";
+// functions/api/models/index.js
 
-export async function onRequestGet(context) {
-  const { request, env } = context;
-  const db = env.DB;
+export const onRequestGet = async ({ env, request }) => {
   const url = new URL(request.url);
-  const searchParams = url.searchParams;
-  const slug = searchParams.get("slug");
+
+  const slug = url.searchParams.get("slug");
+
+  let page = parseInt(url.searchParams.get("page") || "1", 10);
+  let limit = parseInt(url.searchParams.get("limit") || "24", 10);
+
+  if (!Number.isFinite(page) || page < 1) page = 1;
+  if (!Number.isFinite(limit) || limit < 1) limit = 24;
+  if (limit > 100) limit = 100;
+
+  const offset = (page - 1) * limit;
 
   try {
+    // =========================
+    // 1) Buscar UM modelo por slug
+    // =========================
     if (slug) {
-      const stmt = db.prepare(`
-        SELECT id, slug, display_name, avatar_url, banner_url, bio, created_at
+      const stmt = env.DB.prepare(`
+        SELECT *
         FROM models
         WHERE slug = ?
       `);
-      const row = await stmt.get(slug);
-      if (!row) return jsonResponse({ items: [] });
-      return jsonResponse({ items: [row] });
+
+      const model = await stmt.bind(slug).first();
+
+      if (!model) {
+        return jsonResponse({ error: "Model not found" }, 404);
+      }
+
+      return jsonResponse(model);
     }
 
-    const { page, limit, offset } = getPagination(searchParams, 12, 100);
-    const sort = (searchParams.get("sort") || "recent").toLowerCase();
-    const orderBy =
-      sort === "recent"
-        ? "created_at DESC"
-        : "display_name COLLATE NOCASE ASC";
+    // =========================
+    // 2) Listar modelos paginados
+    // =========================
+    const whereSql = ""; // por enquanto sem filtros extras
 
-    const rows = await db
-      .prepare(
-        `
-        SELECT id, slug, display_name, avatar_url, banner_url, bio, created_at
-        FROM models
-        ORDER BY ${orderBy}
-        LIMIT ? OFFSET ?
-      `
-      )
-      .bind(limit, offset)
-      .all();
+    // ---- Contagem total ----
+    const countStmt = env.DB.prepare(`
+      SELECT COUNT(*) AS total
+      FROM models
+      ${whereSql}
+    `);
 
-    const totalRow = await db
-      .prepare("SELECT COUNT(*) as c FROM models")
-      .all();
-    const total = totalRow.results?.[0]?.c || 0;
+    const countRow = await countStmt.first();
+    const total = countRow?.total || 0;
+
+    // ---- Lista de modelos ----
+    const listStmt = env.DB.prepare(`
+      SELECT *
+      FROM models
+      ${whereSql}
+      ORDER BY created_at DESC, id DESC
+      LIMIT ? OFFSET ?
+    `);
+
+    const { results } = await listStmt.bind(limit, offset).all();
     const hasMore = page * limit < total;
 
     return jsonResponse({
-      items: rows.results || [],
+      items: results || [],
       page,
       limit,
       total,
       hasMore
     });
   } catch (err) {
-    return errorResponse(err.message || "Models error", 500);
+    console.error("Error in /api/models:", err);
+    return jsonResponse(
+      { error: "Internal server error" },
+      500
+    );
   }
-}
+};
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const db = env.DB;
-
-  try {
-    requireApiKey(request, env);
-
-    const body = await request.json();
-    const { slug, display_name, avatar_url = null, banner_url = null, bio = null } = body;
-
-    if (!slug || !display_name) {
-      return errorResponse("Missing slug or display_name", 400);
+// Helper pra resposta JSON
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
     }
-
-    const stmt = db.prepare(`
-      INSERT INTO models (slug, display_name, avatar_url, banner_url, bio)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    const info = await stmt.bind(slug, display_name, avatar_url, banner_url, bio).run();
-
-    return jsonResponse({
-      id: info.meta.last_row_id,
-      slug,
-      display_name,
-      avatar_url,
-      banner_url,
-      bio
-    }, 201);
-  } catch (err) {
-    if (err.message === "Unauthorized") {
-      return errorResponse("Unauthorized", 401);
-    }
-    return errorResponse(err.message || "Models insert error", 500);
-  }
+  });
 }
