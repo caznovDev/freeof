@@ -1,3 +1,4 @@
+// src/pages/Watch.jsx
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams, Link } from "react-router-dom";
@@ -11,15 +12,21 @@ export default function Watch() {
   const [loadingRel, setLoadingRel] = useState(true);
   const [error, setError] = useState("");
 
+  // 5th-video logic: on the 5th play, open ad in new tab
   const { registerVideoPlay } = useVideoPlayAd({ threshold: 5 });
 
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
 
+    // reset state whenever the URL id changes
+    setVideo(null);
+    setRelated([]);
+    setError("");
+    setLoading(true);
+    setLoadingRel(true);
+
     async function fetchVideo() {
-      setLoading(true);
-      setError("");
       try {
         const res = await fetch(`/api/videos?id=${encodeURIComponent(id)}`);
         if (!res.ok) throw new Error("API error");
@@ -45,7 +52,10 @@ export default function Watch() {
   }, [id]);
 
   useEffect(() => {
-    if (!video?.model_id) return;
+    if (!video?.model_id) {
+      setLoadingRel(false);
+      return;
+    }
     let cancelled = false;
 
     async function fetchRelated() {
@@ -74,7 +84,7 @@ export default function Watch() {
     return () => {
       cancelled = true;
     };
-  }, [video]);
+  }, [video?.id, video?.model_id]);
 
   const title = video?.title || "Watch video";
   const src = video?.video_url || "";
@@ -121,6 +131,7 @@ export default function Watch() {
                 )}
               </div>
               <video
+                key={video.id} // force remount when video changes
                 controls
                 preload="metadata"
                 poster={thumb}
