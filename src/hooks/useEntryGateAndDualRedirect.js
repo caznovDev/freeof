@@ -1,5 +1,4 @@
-// src/hooks/useEntryGateAndDualRedirect.js
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const ENTRY_KEY = "freeof_lastEntryTs";
 const VIDEO_COUNT_KEY = "freeof_videoPlayCount";
@@ -41,12 +40,6 @@ function shouldShowEntryPopup(cooldownMinutes = 60) {
   return nowMs() - last >= cooldownMs;
 }
 
-/**
- * Entry gate:
- * - Shows popup if user hasn't accepted in the last `cooldownMinutes`.
- * - On "accept": opens current page in a new tab, redirects this tab to `adUrl`.
- * - On "leave": redirects this tab to `adUrl`.
- */
 export function useEntryGate({ cooldownMinutes = 60, adUrl = AD_URL } = {}) {
   const [showPopup, setShowPopup] = useState(false);
 
@@ -82,7 +75,7 @@ export function useEntryGate({ cooldownMinutes = 60, adUrl = AD_URL } = {}) {
 }
 
 /* =========================================================
- * 5th-VIDEO POPUP (counter in localStorage)
+ * 5th-VIDEO: OPEN AD IN NEW TAB ONLY
  * =======================================================*/
 
 function getVideoCount() {
@@ -94,70 +87,39 @@ function setVideoCount(n) {
 }
 
 /**
- * useVideoPlayPopup
+ * useVideoPlayAd
  *
- * Usage:
- *   const { showPopup, registerVideoPlay, accept, close } = useVideoPlayPopup();
- *
- *   // call this when a video actually starts playing
- *   const onPlay = () => {
- *     registerVideoPlay();
- *   };
- *
- *   {showPopup && ( ...your popup UI... )}
+ * Returns a `registerVideoPlay` function.
+ * Call it when a video actually starts playing (`onPlay`).
+ * On the Nth play (`threshold`), it opens `adUrl` in a new tab
+ * and resets the counter.
  */
-export function useVideoPlayPopup({
+export function useVideoPlayAd({
   threshold = 5,
   adUrl = AD_URL
 } = {}) {
-  const [showPopup, setShowPopup] = useState(false);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // Ensure the key exists
     const current = getVideoCount();
     if (current < 0) setVideoCount(0);
   }, []);
 
-  const resetCount = () => {
-    setVideoCount(0);
-  };
-
-  const registerVideoPlay = () => {
+  const registerVideoPlay = useCallback(() => {
     if (typeof window === "undefined") return;
 
     const current = getVideoCount() + 1;
     setVideoCount(current);
 
     if (current >= threshold) {
-      setShowPopup(true);
+      // reset counter and open ad in new tab
+      setVideoCount(0);
+      try {
+        window.open(adUrl, "_blank");
+      } catch {
+        // ignore popup blocker
+      }
     }
-  };
+  }, [threshold, adUrl]);
 
-  const accept = () => {
-    // Same monetization behavior as entry gate
-    resetCount();
-    setShowPopup(false);
-
-    if (typeof window === "undefined") return;
-
-    const target = window.location.href;
-    try {
-      window.open(target, "_blank");
-    } catch {
-      // ignore popup blocker
-    }
-
-    setTimeout(() => {
-      window.location.href = adUrl;
-    }, 250);
-  };
-
-  const close = () => {
-    // Just close, also reset the counter
-    resetCount();
-    setShowPopup(false);
-  };
-
-  return { showPopup, registerVideoPlay, accept, close };
+  return { registerVideoPlay };
 }
