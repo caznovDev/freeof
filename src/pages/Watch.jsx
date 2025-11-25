@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams, Link } from "react-router-dom";
+import { useVideoPlayAd } from "../hooks/useEntryGateAndDualRedirect";
 
 export default function Watch() {
   const { id } = useParams();
@@ -9,6 +10,8 @@ export default function Watch() {
   const [loading, setLoading] = useState(true);
   const [loadingRel, setLoadingRel] = useState(true);
   const [error, setError] = useState("");
+
+  const { registerVideoPlay } = useVideoPlayAd({ threshold: 5 });
 
   useEffect(() => {
     if (!id) return;
@@ -122,6 +125,7 @@ export default function Watch() {
                 preload="metadata"
                 poster={thumb}
                 className="w-full rounded-xl bg-black"
+                onPlay={registerVideoPlay}
               >
                 <source src={src} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -168,14 +172,7 @@ export default function Watch() {
             <div className="mt-2" id="seeAllWrap">
               <Link
                 to={`/model/${encodeURIComponent(modelSlug)}`}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-500"
+                className="block w-full text-center px-4 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-500"
               >
                 See all videos
-              </Link>
-            </div>
-          )}
-        </section>
-      </main>
-    </>
-  );
-}
+              </
