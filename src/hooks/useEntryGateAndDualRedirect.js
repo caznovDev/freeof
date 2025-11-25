@@ -1,7 +1,8 @@
+// src/hooks/useEntryGateAndDualRedirect.js
 import { useEffect, useState } from "react";
 
 const ENTRY_KEY = "freeof_lastEntryTs";
-const REDIRECT_KEY = "freeof_lastDualRedirectTs";
+const VIDEO_COUNT_KEY = "freeof_videoPlayCount";
 
 export const AD_URL =
   "https://www.effectivegatecpm.com/fspkxf7f0?key=ab4f7c97fff46fa5a9a80f09a863e87b";
@@ -29,7 +30,9 @@ function setIntLS(key, value) {
   }
 }
 
-// =============== ENTRY POPUP ===============
+/* =========================================================
+ * ENTRY POPUP (1-hour cooldown)
+ * =======================================================*/
 
 function shouldShowEntryPopup(cooldownMinutes = 60) {
   const cooldownMs = cooldownMinutes * 60 * 1000;
@@ -39,12 +42,12 @@ function shouldShowEntryPopup(cooldownMinutes = 60) {
 }
 
 /**
- * Entry gate hook.
+ * Entry gate:
  * - Shows popup if user hasn't accepted in the last `cooldownMinutes`.
- * - On "accept": opens current page in a new tab and redirects THIS tab to `adUrl`.
- * - On "leave": just redirects to `adUrl`.
+ * - On "accept": opens current page in a new tab, redirects this tab to `adUrl`.
+ * - On "leave": redirects this tab to `adUrl`.
  */
-export function useEntryGate({ cooldownMinutes = 1, adUrl = AD_URL } = {}) {
+export function useEntryGate({ cooldownMinutes = 60, adUrl = AD_URL } = {}) {
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
@@ -62,10 +65,9 @@ export function useEntryGate({ cooldownMinutes = 1, adUrl = AD_URL } = {}) {
     try {
       window.open(target, "_blank");
     } catch {
-      // ignore blocker
+      // ignore popup blocker
     }
 
-    // Small delay so the new tab opens first
     setTimeout(() => {
       window.location.href = adUrl;
     }, 250);
@@ -79,99 +81,83 @@ export function useEntryGate({ cooldownMinutes = 1, adUrl = AD_URL } = {}) {
   return { showPopup, accept, leave };
 }
 
-// =============== DUAL REDIRECT ===============
+/* =========================================================
+ * 5th-VIDEO POPUP (counter in localStorage)
+ * =======================================================*/
 
-/**
- * Start time of this page view. We want it to start on page load,
- * NOT on the first click, so the delay really counts from entry.
- */
-function getPageStart() {
-  if (typeof window === "undefined") return nowMs();
-  if (!window.__freeof_page_start) {
-    window.__freeof_page_start = nowMs();
-  }
-  return window.__freeof_page_start;
+function getVideoCount() {
+  return getIntLS(VIDEO_COUNT_KEY);
 }
 
-function canDualRedirect(delayMinutes = 2) {
-  const delayMs = delayMinutes * 60 * 1000;
-  const now = nowMs();
-  const last = getIntLS(REDIRECT_KEY);
-  const pageStart = getPageStart();
-
-  // First redirect in this session: use time since page load
-  if (!last) {
-    return now - pageStart >= delayMs;
-  }
-
-  // Subsequent redirects: use time since last redirect
-  return now - last >= delayMs;
-}
-
-function recordDualRedirect() {
-  setIntLS(REDIRECT_KEY, nowMs());
-}
-
-function fadeAndRedirect(adUrl) {
-  try {
-    document.body.style.transition = "opacity 0.25s ease";
-    document.body.style.opacity = "0.5";
-  } catch {
-    // ignore
-  }
-  setTimeout(() => {
-    window.location.href = adUrl;
-  }, 250);
+function setVideoCount(n) {
+  setIntLS(VIDEO_COUNT_KEY, n);
 }
 
 /**
- * Dual redirect hook.
- * - After `delayMinutes` from page load (or last redirect),
- *   the next click on a matching link:
- *   • opens the link in a new tab
- *   • fades and redirects current tab to `adUrl`
+ * useVideoPlayPopup
+ *
+ * Usage:
+ *   const { showPopup, registerVideoPlay, accept, close } = useVideoPlayPopup();
+ *
+ *   // call this when a video actually starts playing
+ *   const onPlay = () => {
+ *     registerVideoPlay();
+ *   };
+ *
+ *   {showPopup && ( ...your popup UI... )}
  */
-export function useDualRedirect({
-  adUrl = AD_URL,
-  selector = "a",
-  delayMinutes = 2
+export function useVideoPlayPopup({
+  threshold = 5,
+  adUrl = AD_URL
 } = {}) {
+  const [showPopup, setShowPopup] = useState(false);
+
   useEffect(() => {
-    if (typeof document === "undefined") return;
+    if (typeof window === "undefined") return;
+    // Ensure the key exists
+    const current = getVideoCount();
+    if (current < 0) setVideoCount(0);
+  }, []);
 
-    // Initialize page start as soon as hook runs
-    getPageStart();
+  const resetCount = () => {
+    setVideoCount(0);
+  };
 
-    const handler = (evt) => {
-      const target = evt.target;
-      if (!target || !target.closest) return;
+  const registerVideoPlay = () => {
+    if (typeof window === "undefined") return;
 
-      const link = target.closest(selector);
-      if (!link) return;
+    const current = getVideoCount() + 1;
+    setVideoCount(current);
 
-      // Opt-out for specific links
-      if (link.dataset.noDual === "1") return;
+    if (current >= threshold) {
+      setShowPopup(true);
+    }
+  };
 
-      const href = link.href;
-      if (!href || href.startsWith("javascript:")) return;
+  const accept = () => {
+    // Same monetization behavior as entry gate
+    resetCount();
+    setShowPopup(false);
 
-      if (!canDualRedirect(delayMinutes)) return;
+    if (typeof window === "undefined") return;
 
-      evt.preventDefault();
-      recordDualRedirect();
+    const target = window.location.href;
+    try {
+      window.open(target, "_blank");
+    } catch {
+      // ignore popup blocker
+    }
 
-      try {
-        window.open(href, "_blank");
-      } catch {
-        // popup blocked: user still stays on this tab, which we redirect
-      }
+    setTimeout(() => {
+      window.location.href = adUrl;
+    }, 250);
+  };
 
-      fadeAndRedirect(adUrl);
-    };
+  const close = () => {
+    // Just close, also reset the counter
+    resetCount();
+    setShowPopup(false);
+  };
 
-    document.addEventListener("click", handler, true);
-    return () => {
-      document.removeEventListener("click", handler, true);
-    };
-  }, [adUrl, selector, delayMinutes]);
+  return { showPopup, registerVideoPlay, accept, close };
 }
