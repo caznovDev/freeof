@@ -175,4 +175,11 @@ export default function Watch() {
                 className="block w-full text-center px-4 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-500"
               >
                 See all videos
-              </
+              </Link>
+            </div>
+          )}
+        </section>
+      </main>
+    </>
+  );
+}
