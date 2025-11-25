@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
+import { useVideoPlayAd } from "../hooks/useEntryGateAndDualRedirect";
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -20,7 +21,10 @@ export default function ModelPage() {
   const [loadingModel, setLoadingModel] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [error, setError] = useState("");
-  const [playing, setPlaying] = useState({});
+  const [playingId, setPlayingId] = useState(null);
+  const videoRef = useRef(null);
+
+  const { registerVideoPlay } = useVideoPlayAd({ threshold: 5 });
 
   useEffect(() => {
     if (!slug) return;
@@ -81,7 +85,18 @@ export default function ModelPage() {
 
   const onThumbClick = (video) => {
     if (!video.id) return;
-    setPlaying((prev) => ({ ...prev, [video.id]: true }));
+    setPlayingId(video.id);
+
+    // ensure it plays immediately on first click
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current
+          .play()
+          .catch(() => {
+            // ignore autoplay error
+          });
+      }
+    }, 0);
   };
 
   return (
@@ -144,7 +159,7 @@ export default function ModelPage() {
               const videoUrl = v.video_url || "";
               const posterUrl = v.thumbnail_url || avatar || "";
               const title = v.title || "";
-              const isPlaying = !!playing[v.id];
+              const isPlaying = playingId === v.id;
 
               return (
                 <div
@@ -169,11 +184,13 @@ export default function ModelPage() {
 
                   {isPlaying && (
                     <video
+                      ref={videoRef}
                       controls
                       preload="none"
                       poster={posterUrl}
                       className="w-full rounded-xl bg-black"
                       autoPlay
+                      onPlay={registerVideoPlay}
                     >
                       <source src={videoUrl} type="video/mp4" />
                       Your browser does not support the video tag.
