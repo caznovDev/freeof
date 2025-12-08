@@ -1,0 +1,18 @@
+
+name = "sfw-hub"
+compatibility_date = "2024-01-01"
+
+[vars]
+APP_URL = "https://example.com"
+GITHUB_CLIENT_ID = "replace"
+GITHUB_CLIENT_SECRET = "replace"
+JWT_SECRET = "replace"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sfwdb"
+database_id = "local"
+
+[r2_buckets]
+binding = "R2_BUCKET"
+bucket_name = "sfw-bucket"
